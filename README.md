@@ -9,6 +9,6 @@ Originally designed to work in Flutter with the flutter_mdns_plugin https://gith
 so this cli project does not include a mdns browser, you should find out what the local ip address and port of your
 ChromeCast is yourself.
 
-###usage
+### usage
 `dart index.js <media> --host <host> --port <port>` 
 
