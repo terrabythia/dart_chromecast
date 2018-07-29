@@ -53,13 +53,13 @@ void startCasting() async {
 
   // listen for cast session updates and save the state when
   // the device is connected
-  castSender.on(CastSessionUpdatedEvent).listen((e) async {
-    if (e.castSession.isConnected) {
+  castSender.castSessionController.stream.listen((CastSession castSession) async {
+    if (castSession.isConnected) {
       File savedStateFile = await File('saved_cast_state.json');
       Map map = {
         'time': DateTime.now().millisecondsSinceEpoch,
       }..addAll(
-          e.castSession.toMap()
+          castSession.toMap()
       );
       await savedStateFile.writeAsString(
           jsonEncode(map)
@@ -69,7 +69,7 @@ void startCasting() async {
   });
 
   // Listen for media status updates, such as pausing, playing, seeking, playback etc.
-  castSender.on(CastMediaStatusUpdatedEvent).listen((e) {
+  castSender.castMediaStatusController.stream.listen((CastMediaStatus mediaStatus) {
     // TODO: do something?
     // show progress for example
   });

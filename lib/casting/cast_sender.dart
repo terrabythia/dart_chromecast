@@ -7,15 +7,12 @@ import 'package:dart_chromecast/casting/cast_media.dart';
 import 'package:dart_chromecast/casting/cast_media_status.dart';
 import 'package:dart_chromecast/casting/cast_session.dart';
 import 'package:dart_chromecast/casting/connection_channel.dart';
-import 'package:dart_chromecast/casting/events/cast_media_status_updated_event.dart';
-import 'package:dart_chromecast/casting/events/cast_session_updated_event.dart';
 import 'package:dart_chromecast/casting/heartbeat_channel.dart';
 import 'package:dart_chromecast/casting/media_channel.dart';
 import 'package:dart_chromecast/casting/receiver_channel.dart';
 import 'package:dart_chromecast/proto/cast_channel.pb.dart';
-import 'package:events/events.dart';
 
-class CastSender extends Object with Events {
+class CastSender extends Object {
 
   final CastDevice device;
 
@@ -32,11 +29,15 @@ class CastSender extends Object with Events {
   Timer _mediaCurrentTimeTimer;
 
   CastSession _castSession;
+  StreamController<CastSession> castSessionController;
+  StreamController<CastMediaStatus> castMediaStatusController;
   List<CastMedia> _contentQueue;
 
   CastSender(this.device) {
       // TODO: _airplay._tcp
     _contentQueue = [];
+    castSessionController = StreamController.broadcast();
+    castMediaStatusController = StreamController.broadcast();
   }
 
   // TODO: reconnect if there is already a current session?
@@ -132,13 +133,13 @@ class CastSender extends Object with Events {
   }
 
   void togglePause() {
-    print('toggle pause');
-    print(_castSession.castMediaStatus.toString());
-    print(_castSession.castMediaStatus.isPaused.toString());
-    if (null != _castSession.castMediaStatus && !_castSession.castMediaStatus.isPaused) {
+    print(_castSession.toString());
+    if (null != _castSession.castMediaStatus && _castSession.castMediaStatus.isPlaying) {
+      print('PAUSE');
       pause();
     }
-    else {
+    else if (null != _castSession.castMediaStatus && _castSession.castMediaStatus.isPaused){
+      print('PLAY');
       play();
     }
   }
@@ -229,7 +230,9 @@ class CastSender extends Object with Events {
           'type': 'GET_STATUS'
         });
 
-        this.emit(CastSessionUpdatedEvent(castSession: _castSession));
+        castSessionController.add(
+            _castSession
+        );
       }
     }
   }
@@ -239,7 +242,7 @@ class CastSender extends Object with Events {
       await Future.delayed(Duration(milliseconds: 100));
       if (connectionDidClose) return false;
     }
-    return null != _castSession.castMediaStatus;
+    return _castSession.isConnected;
   }
 
   void _handleMediaStatus(Map payload) {
@@ -248,6 +251,10 @@ class CastSender extends Object with Events {
     print('Handle media status: ' +  payload.toString());
 
     if (null != payload['status']) {
+      if (!_castSession.isConnected) {
+        _castSession.isConnected = true;
+        _handleContentQueue();
+      }
       if (payload['status'].length > 0) {
         _castSession.castMediaStatus = CastMediaStatus.fromChromeCastMediaStatus(
             payload['status'][0]
@@ -263,19 +270,13 @@ class CastSender extends Object with Events {
           _mediaCurrentTimeTimer.cancel();
           _mediaCurrentTimeTimer = null;
         }
-      }
-      else {
-        _castSession.isConnected = true;
+
+        castMediaStatusController.add(
+            _castSession.castMediaStatus
+        );
+
       }
     }
-
-    if (!_castSession.isReadyForMedia) {
-      // first media status; chromecast is ready.
-      _handleContentQueue();
-      _castSession.isReadyForMedia = true;
-    }
-
-    this.emit(CastMediaStatusUpdatedEvent(castMediaStatus: _castSession.castMediaStatus));
 
   }
 
