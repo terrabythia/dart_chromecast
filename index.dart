@@ -119,7 +119,7 @@ void startCasting() async {
     append: argResults['append']
   );
 
-  // Initiate key press handler 
+  // Initiate key press handler
   // space = toggle pause
   // s = stop playing
   // left arrow = seek current playback - 10s

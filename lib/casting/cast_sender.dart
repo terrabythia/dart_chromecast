@@ -81,6 +81,8 @@ class CastSender extends Object with Events {
       'type': 'GET_STATUS'
     });
 
+//    print('GOT GET STATUS RESULT: ' + payload.toString());
+
     // now wait for the media to actually get a status?
     return await _waitForMediaStatus();
 
@@ -233,7 +235,7 @@ class CastSender extends Object with Events {
   }
 
   Future<bool> _waitForMediaStatus() async {
-    while(null == _castSession.castMediaStatus) {
+    while(false == _castSession.isConnected) {
       await Future.delayed(Duration(milliseconds: 100));
       if (connectionDidClose) return false;
     }
@@ -245,20 +247,25 @@ class CastSender extends Object with Events {
 
     print('Handle media status: ' +  payload.toString());
 
-    if (null != payload['status'] && payload['status'].length > 0) {
-      _castSession.castMediaStatus = CastMediaStatus.fromChromeCastMediaStatus(
-          payload['status'][0]
-      );
-      print('Media status ${_castSession.castMediaStatus.toString()}');
-      if (_castSession.castMediaStatus.isFinished) {
-        _handleContentQueue();
-      }
-      if (_castSession.castMediaStatus.isPlaying) {
+    if (null != payload['status']) {
+      if (payload['status'].length > 0) {
+        _castSession.castMediaStatus = CastMediaStatus.fromChromeCastMediaStatus(
+            payload['status'][0]
+        );
+        print('Media status ${_castSession.castMediaStatus.toString()}');
+        if (_castSession.castMediaStatus.isFinished) {
+          _handleContentQueue();
+        }
+        if (_castSession.castMediaStatus.isPlaying) {
           _mediaCurrentTimeTimer = Timer(Duration(seconds: 1), _getMediaCurrentTime);
+        }
+        else if (_castSession.castMediaStatus.isPaused && null != _mediaCurrentTimeTimer) {
+          _mediaCurrentTimeTimer.cancel();
+          _mediaCurrentTimeTimer = null;
+        }
       }
-      else if (_castSession.castMediaStatus.isPaused && null != _mediaCurrentTimeTimer) {
-        _mediaCurrentTimeTimer.cancel();
-        _mediaCurrentTimeTimer = null;
+      else {
+        _castSession.isConnected = true;
       }
     }
 

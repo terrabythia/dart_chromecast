@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -21,8 +22,8 @@ abstract class CastChannel {
       _sourceId = sourceId,
       _destinationId = destinationId,
       _namespace = namespace;
-
-  sendMessage(Map payload) {
+  
+  void sendMessage(Map payload) async {
 
     payload['requestId'] = _requestId;
 
