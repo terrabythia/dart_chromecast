@@ -6,3 +6,4 @@ dependencies:
   cli_util: ^0.1.0
   args: ^1.4.0
   xml: ^3.0.0
+  observable: any

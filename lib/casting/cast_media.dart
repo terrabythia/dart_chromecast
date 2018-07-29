@@ -3,26 +3,36 @@
 class CastMedia {
 
   final String contentId;
-  bool _autoPlay;
-  double _position;
-  String _contentType;
+  String title;
+  bool autoPlay = true;
+  double position;
+  String contentType;
+  List<String> images;
 
-
-  CastMedia({ this.contentId, bool autoPlay = true, double position = 0.0, String contentType = 'video/mp4'}) {
-    _autoPlay = autoPlay;
-    _position = position;
-    _contentType = contentType;
+  CastMedia({
+    this.contentId,
+    this.title,
+    this.autoPlay = true,
+    this.position = 0.0,
+    this.contentType = 'video/mp4',
+    this.images,
+  }) {
+    if (null == images) {
+      images = [];
+    }
   }
 
   Map toChromeCastMap() {
     return {
       'type': 'LOAD',
-      'autoPlay': _autoPlay,
-      'currentTime': _position,
+      'autoPlay': autoPlay,
+      'currentTime': position,
       'activeTracks': [],
       'media': {
         'contentId': contentId,
-        'contentType': _contentType,
+        'contentType': contentType,
+        'images': images,
+        'title': title,
         'streamType': 'BUFFERED',
       }
     };

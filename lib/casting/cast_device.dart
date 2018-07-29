@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
+import 'package:observable/observable.dart';
 
 enum CastDeviceType {
   Unknown,
@@ -7,7 +8,7 @@ enum CastDeviceType {
   AppleTV,
 }
 
-class CastDevice {
+class CastDevice extends ChangeNotifier {
 
   final String name;
   final String type;
@@ -33,7 +34,8 @@ class CastDevice {
         xml.XmlElement deviceElement =
             document.findElements('root').first
             .findElements('device').first;
-        _friendlyName = deviceElement.findElements('deviceType').first.toString();
+        _friendlyName = deviceElement.findElements('friendlyName').first.text;
+        notifyChange();
       });
     }
     else if (CastDeviceType.AppleTV == deviceType) {
@@ -43,10 +45,10 @@ class CastDevice {
   }
 
   CastDeviceType get deviceType {
-    if ('_googlecast._tcp' == type) {
+    if (type.startsWith('_googlecast._tcp')) {
       return CastDeviceType.ChromeCast;
     }
-    else if ('_airplay._tcp' == type) {
+    else if (type.startsWith('_airplay._tcp')) {
       return CastDeviceType.AppleTV;
     }
     return CastDeviceType.Unknown;
