@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:dart_chromecast_cli/casting/cast_device.dart';
-import 'package:dart_chromecast_cli/casting/connection_channel.dart';
-import 'package:dart_chromecast_cli/casting/heartbeat_channel.dart';
-import 'package:dart_chromecast_cli/casting/media_channel.dart';
-import 'package:dart_chromecast_cli/casting/receiver_channel.dart';
-import 'package:dart_chromecast_cli/proto/cast_channel.pb.dart';
+import 'package:dart_chromecast/casting/cast_device.dart';
+import 'package:dart_chromecast/casting/connection_channel.dart';
+import 'package:dart_chromecast/casting/heartbeat_channel.dart';
+import 'package:dart_chromecast/casting/media_channel.dart';
+import 'package:dart_chromecast/casting/receiver_channel.dart';
+import 'package:dart_chromecast/proto/cast_channel.pb.dart';
 
 class CastSender {
 

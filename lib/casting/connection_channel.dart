@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dart_chromecast_cli/casting/cast_channel.dart';
+import 'package:dart_chromecast/casting/cast_channel.dart';
 
 class ConnectionChannel extends CastChannel {
 

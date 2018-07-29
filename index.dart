@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:dart_chromecast_cli/casting/cast_device.dart';
-import 'lib/casting/cast.dart';
+import 'package:dart_chromecast/casting/cast.dart';
 
 ArgResults argResults;
 CastSender castSender;

@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:dart_chromecast_cli/casting/cast_channel.dart';
-import 'package:dart_chromecast_cli/proto/cast_channel.pb.dart';
+import 'package:dart_chromecast/casting/cast_channel.dart';
+import 'package:dart_chromecast/proto/cast_channel.pb.dart';
 
 class ReceiverChannel extends CastChannel {
 

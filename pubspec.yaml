@@ -1,4 +1,4 @@
-name: dart_chromecast_cli
+name: dart_chromecast
 
 dependencies:
   protobuf: any
