@@ -10,7 +10,9 @@ so this cli project does not include a mdns browser, you should find out what th
 
 ### options
 **media** space separated list of one or more media source urls
+
 **host** IP address of a ChromeCast device in the same network that you are on.
+
 **port** (optional) port of the ChromeCast device. Defaults to `8009`.
 
 ### flags
