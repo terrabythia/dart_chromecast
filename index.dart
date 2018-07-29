@@ -10,6 +10,7 @@ CastSender castSender;
 
 void main(List<String> arguments) {
 
+  // Create an argument parser so we can read the cli's arguments and options
   final parser = new ArgParser()
     ..addOption('host', abbr: 'h', defaultsTo: '192.168.1.214')
     ..addOption('port', abbr: 'p', defaultsTo: '8009')
@@ -25,10 +26,10 @@ void startCasting() async {
 
   print('startCasting...');
 
-  // try to load previous state
+  // try to load previous state saved as json in saved_cast_state.json
   Map savedState;
   try {
-    File savedStateFile = await File('saved_cast_state.json');
+    File savedStateFile = await File('./saved_cast_state.json');
     if (null != savedStateFile) {
       savedState = jsonDecode(await savedStateFile.readAsString());
     }
@@ -38,25 +39,36 @@ void startCasting() async {
     print('error fetching saved state' + e.toString());
   }
 
+  // create the chromecast device with the passed in host and port
   CastDevice device = CastDevice(
     host: argResults['host'],
     port: int.parse(argResults['port']),
     type: '_googlecast._tcp',
   );
 
+  // instantiate the chromecast sender class
   castSender = CastSender(
     device
   );
 
+  // listen for cast session updates and save the state when
+  // the device is connected
   castSender.on(CastSessionUpdatedEvent).listen((e) async {
-    // save ids to file?
-    File savedStateFile = await File('saved_cast_state.json');
-    await savedStateFile.writeAsString(
-      jsonEncode(e.castSession.toMap())
-    );
-    print('Cast session was saved.');
+    if (e.castSession.isConnected) {
+      File savedStateFile = await File('saved_cast_state.json');
+      Map map = {
+        'time': DateTime.now().millisecondsSinceEpoch,
+      }..addAll(
+          e.castSession.toMap()
+      );
+      await savedStateFile.writeAsString(
+          jsonEncode(map)
+      );
+      print('Cast session was saved.');
+    }
   });
 
+  // Listen for media status updates, such as pausing, playing, seeking, playback etc.
   castSender.on(CastMediaStatusUpdatedEvent).listen((e) {
     // TODO: do something?
     // show progress for example
@@ -67,7 +79,12 @@ void startCasting() async {
 
   print(savedState.toString());
   if (null != savedState) {
-    connected = await castSender.reconnect(sourceId: savedState['sourceId'], destinationId: savedState['destinationId']);
+    // If we have a saved state,
+    // try to reconnect
+    connected = await castSender.reconnect(
+        sourceId: savedState['sourceId'],
+        destinationId: savedState['destinationId'],
+    );
     if (connected) {
       didReconnect = true;
     }
@@ -75,6 +92,8 @@ void startCasting() async {
 
   print('connected? ${connected.toString()}');
 
+  // if reconnection failed or we never had a saved state to begin with
+  // connect to a fresh session.
   if (!connected) {
     connected = await castSender.connect();
   }
@@ -91,12 +110,20 @@ void startCasting() async {
 
   }
 
+  // turn each rest argument string into a CastMedia instance
   List<CastMedia> media = argResults.rest.map((String i) => CastMedia(contentId:  i)).toList();
+
+  // load CastMedia playlist and send it to the chromecast
   castSender.loadPlaylist(
     media,
     append: argResults['append']
   );
 
+  // Initiate key press handler 
+  // space = toggle pause
+  // s = stop playing
+  // left arrow = seek current playback - 10s
+  // right arrow = seek current playback + 10s
   stdin.lineMode = false;
   stdin.listen(_handleUserInput);
 
@@ -109,22 +136,17 @@ void _handleUserInput(List<int> data) {
   int keyCode = data.last;
 
   if (32 == keyCode) {
-    // space
+    // space = toggle pause
     castSender.togglePause();
   }
-  else if (101 == keyCode) {
-    // e == end
+  else if (115 == keyCode) {
+    // s == stop
     castSender.stop();
   }
-  else if (115 == keyCode) {
-    // s
-
-  }
   else if (67 == keyCode || 68 == keyCode) {
-    // right or left
+    // left or right = seek 10s back or forth
     double seekBy = 67 == keyCode ? 10.0 : -10.0;
     if (null != castSender.castSession && null != castSender.castSession.castMediaStatus) {
-
       castSender.seek(
           max(0.0, castSender.castSession.castMediaStatus.position + seekBy),
       );
