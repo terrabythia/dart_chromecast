@@ -7,17 +7,17 @@ import 'package:dart_chromecast/casting/cast_media.dart';
 import 'package:dart_chromecast/casting/cast_media_status.dart';
 import 'package:dart_chromecast/casting/cast_session.dart';
 import 'package:dart_chromecast/casting/connection_channel.dart';
+import 'package:dart_chromecast/casting/events/cast_media_status_updated_event.dart';
+import 'package:dart_chromecast/casting/events/cast_session_updated_event.dart';
 import 'package:dart_chromecast/casting/heartbeat_channel.dart';
 import 'package:dart_chromecast/casting/media_channel.dart';
 import 'package:dart_chromecast/casting/receiver_channel.dart';
 import 'package:dart_chromecast/proto/cast_channel.pb.dart';
+import 'package:events/events.dart';
 
-class CastSender {
+class CastSender extends Object with Events {
 
   final CastDevice device;
-
-  String sourceId;
-  String destinationId;
 
   SecureSocket _socket;
 
@@ -26,40 +26,36 @@ class CastSender {
   ReceiverChannel _receiverChannel;
   MediaChannel _mediaChannel;
 
+  bool connectionDidClose;
+
   Timer _heartbeatTimer;
   Timer _mediaCurrentTimeTimer;
 
-  bool _mediaReady = false;
   CastSession _castSession;
   List<CastMedia> _contentQueue;
 
   CastSender(this.device) {
       // TODO: _airplay._tcp
     _contentQueue = [];
-    sourceId = 'client-${Random().nextInt(99999)}';
   }
 
+  // TODO: reconnect if there is already a current session?
+  // > ask the chromecast for the current session..
   Future<bool> connect() async {
 
-    // connect to socket
-    try {
-      print('Connecting to ${device.host}:${device.port}');
-      _socket = await SecureSocket.connect(
-          device.host,
-          device.port,
-          onBadCertificate: (X509Certificate certificate) => true,
-         timeout: Duration(seconds: 10));
+    connectionDidClose = false;
+
+    if (null == _castSession) {
+      _castSession = CastSession(
+          sourceId: 'client-${Random().nextInt(99999)}',
+          destinationId: 'receiver-0'
+      );
     }
-    catch(e) {
-      print(e.toString());
+
+    // connect to socket
+    if (null == await _createSocket()) {
       return false;
     }
-
-    _connectionChannel = ConnectionChannel.CreateWithSocket(_socket, sourceId: sourceId);
-    _heartbeatChannel = HeartbeatChannel.CreateWithSocket(_socket, sourceId: sourceId);
-    _receiverChannel = ReceiverChannel.CreateWithSocket(_socket, sourceId: sourceId);
-
-    _socket.listen(_onSocketData);
 
     _connectionChannel.sendMessage({
       'type': 'CONNECT'
@@ -72,6 +68,24 @@ class CastSender {
 
   }
 
+  Future<bool> reconnect({ String sourceId, String destinationId}) async {
+
+    _castSession = CastSession(sourceId: sourceId, destinationId: destinationId);
+    bool connected = await connect();
+    if (!connected) {
+      return false;
+    }
+
+    _mediaChannel = MediaChannel.Create(socket: _socket, sourceId: sourceId, destinationId: destinationId);
+    _mediaChannel.sendMessage({
+      'type': 'GET_STATUS'
+    });
+
+    // now wait for the media to actually get a status?
+    return await _waitForMediaStatus();
+
+  }
+
   void launch([String appId]) {
     if (null != _receiverChannel) {
       _receiverChannel.sendMessage({
@@ -81,20 +95,25 @@ class CastSender {
     }
   }
 
-  void load(CastMedia media, [forceNext = true]) {
-    loadPlaylist([media], forceNext);
+  void load(CastMedia media, {forceNext = true}) {
+    loadPlaylist([media], forceNext: forceNext);
   }
 
-  void loadPlaylist(List<CastMedia> media, [forceNext = false]) {
-    _contentQueue = media;
+  void loadPlaylist(List<CastMedia> media, {append: false, forceNext = false}) {
+    if (!append) {
+      _contentQueue = media;
+    }
+    else {
+      _contentQueue.addAll(media);
+    }
     if (null != _mediaChannel) {
-      _handleContentQueue(forceNext);
+      _handleContentQueue(forceNext: forceNext || !append);
     }
   }
 
   void _castMediaAction(type, [params]) {
     if (null == params) params = {};
-    if (null != _mediaChannel && null != _castSession && null != _castSession.castMediaStatus) {
+    if (null != _mediaChannel && null != _castSession.castMediaStatus) {
       _mediaChannel.sendMessage(params..addAll({
         'mediaSessionId': _castSession.castMediaStatus.sessionId,
         'type': type,
@@ -111,7 +130,10 @@ class CastSender {
   }
 
   void togglePause() {
-    if (null != _castSession && null != _castSession.castMediaStatus && !_castSession.castMediaStatus.isPaused) {
+    print('toggle pause');
+    print(_castSession.castMediaStatus.toString());
+    print(_castSession.castMediaStatus.isPaused.toString());
+    if (null != _castSession.castMediaStatus && !_castSession.castMediaStatus.isPaused) {
       pause();
     }
     else {
@@ -136,6 +158,37 @@ class CastSender {
   CastSession get castSession => _castSession;
 
   // private
+
+  Future<SecureSocket> _createSocket() async {
+    if (null == _socket) {
+      try {
+
+        print('Connecting to ${device.host}:${device.port}');
+
+        _socket = await SecureSocket.connect(
+            device.host,
+            device.port,
+            onBadCertificate: (X509Certificate certificate) => true,
+            timeout: Duration(seconds: 10));
+
+        _connectionChannel = ConnectionChannel.create(_socket, sourceId: _castSession.sourceId, destinationId: _castSession.destinationId);
+        _heartbeatChannel = HeartbeatChannel.create(_socket, sourceId: _castSession.sourceId, destinationId: _castSession.destinationId);
+        _receiverChannel = ReceiverChannel.create(_socket, sourceId: _castSession.sourceId, destinationId: _castSession.destinationId);
+
+        _socket.listen(
+            _onSocketData,
+            onDone: _dispose
+        );
+
+      }
+      catch(e) {
+        print(e.toString());
+        return null;
+      }
+    }
+    return _socket;
+  }
+
   void _onSocketData(List<int> event) {
     List<int> slice = event.getRange(4, event.length).toList();
 
@@ -146,7 +199,8 @@ class CastSender {
         Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
         print(payloadMap['type']);
         if ('CLOSE' == payloadMap['type']) {
-          print(payloadMap.toString());
+          _dispose();
+          connectionDidClose = true;
         }
         if ('RECEIVER_STATUS' == payloadMap['type']) {
           _handleReceiverStatus(payloadMap);
@@ -161,24 +215,35 @@ class CastSender {
   void _handleReceiverStatus(Map payload) {
     print(payload.toString());
     if (null == _mediaChannel && null != payload['status'] && null != payload['status']['applications']) {
-      if (null == destinationId) {
-        destinationId = payload['status']['applications'][0]['transportId'] ?? payload['status']['applications'][0]['sessionId'];
-        // re-create the channel with the transportId the chromecast just sent us
-        _castSession = CastSession.fromChromeCastSessionMap(payload['status']['applications'][0]);
-        _connectionChannel = ConnectionChannel.CreateWithSocket(_socket, sourceId: sourceId, destinationId: destinationId);
+      // re-create the channel with the transportId the chromecast just sent us
+      if (!_castSession.isConnected) {
+        _castSession = _castSession..mergeWithChromeCastSessionMap(payload['status']['applications'][0]);
+        _connectionChannel = ConnectionChannel.create(_socket, sourceId: _castSession.sourceId, destinationId: _castSession.destinationId);
         _connectionChannel.sendMessage({
           'type': 'CONNECT'
         });
-        _mediaChannel = MediaChannel.Create(socket: _socket, sourceId: sourceId, destinationId: destinationId);
+        _mediaChannel = MediaChannel.Create(socket: _socket, sourceId: _castSession.sourceId, destinationId: _castSession.destinationId);
         _mediaChannel.sendMessage({
           'type': 'GET_STATUS'
         });
+
+        this.emit(CastSessionUpdatedEvent(castSession: _castSession));
       }
     }
   }
 
+  Future<bool> _waitForMediaStatus() async {
+    while(null == _castSession.castMediaStatus) {
+      await Future.delayed(Duration(milliseconds: 100));
+      if (connectionDidClose) return false;
+    }
+    return null != _castSession.castMediaStatus;
+  }
+
   void _handleMediaStatus(Map payload) {
     // Todo: only start playing the first time we get a valid media status...
+
+    print('Handle media status: ' +  payload.toString());
 
     if (null != payload['status'] && payload['status'].length > 0) {
       _castSession.castMediaStatus = CastMediaStatus.fromChromeCastMediaStatus(
@@ -197,20 +262,21 @@ class CastSender {
       }
     }
 
-    if (!_mediaReady) {
+    if (!_castSession.isReadyForMedia) {
       // first media status; chromecast is ready.
       _handleContentQueue();
-      _mediaReady = true;
+      _castSession.isReadyForMedia = true;
     }
+
+    this.emit(CastMediaStatusUpdatedEvent(castMediaStatus: _castSession.castMediaStatus));
 
   }
 
-  _handleContentQueue([forceNext = false]) {
+  _handleContentQueue({forceNext = false}) {
     if (null == _mediaChannel || _contentQueue.length == 0) {
       return;
     }
-    if (null != _castSession &&
-        null != _castSession.castMediaStatus &&
+    if (null != _castSession.castMediaStatus &&
         !_castSession.castMediaStatus.isFinished &&
         !forceNext) {
       // don't handle the next in the content queue, because we only want
@@ -228,7 +294,7 @@ class CastSender {
 
   void _getMediaCurrentTime() {
 
-    if (null != _mediaChannel && null != _castSession && null != _castSession.castMediaStatus &&  _castSession.castMediaStatus.isPlaying) {
+    if (null != _mediaChannel && null != _castSession.castMediaStatus &&  _castSession.castMediaStatus.isPlaying) {
       _mediaChannel.sendMessage({
         'type': 'GET_STATUS',
       });
@@ -246,6 +312,16 @@ class CastSender {
       _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
     }
 
+  }
+
+  void _dispose() {
+    _socket = null;
+    _heartbeatChannel = null;
+    _connectionChannel = null;
+    _receiverChannel = null;
+    _mediaChannel = null;
+    _castSession = null;
+    _contentQueue = [];
   }
 
 }

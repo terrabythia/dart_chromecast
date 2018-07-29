@@ -6,3 +6,4 @@ dependencies:
   cli_util: ^0.1.3
   args: ^1.4.4
   xml: ^3.0.1
+  events: any

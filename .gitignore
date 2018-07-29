@@ -26,3 +26,5 @@ doc/api/
 
 
 # End of https://www.gitignore.io/api/dart
+
+saved_cast_state.json
