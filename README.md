@@ -10,5 +10,5 @@ so this cli project does not include a mdns browser, you should find out what th
 ChromeCast is yourself.
 
 ### usage
-`dart index.js <media> --host <host> --port <port>` 
+`dart index.dart <media> --host <host> --port <port>` 
 
