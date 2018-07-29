@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:args/args.dart';
 import 'package:dart_chromecast/casting/cast.dart';
@@ -10,7 +11,7 @@ CastSender castSender;
 void main(List<String> arguments) {
 
   final parser = new ArgParser()
-    ..addOption('host', abbr: 'h', defaultsTo: '192.168.1.210')
+    ..addOption('host', abbr: 'h', defaultsTo: '192.168.1.214')
     ..addOption('port', abbr: 'p', defaultsTo: '8009');
 
   argResults = parser.parse(arguments);
@@ -38,7 +39,11 @@ void startCasting() async {
   }
 
   castSender.launch();
-  castSender.loadPlaylist(argResults.rest);
+
+  List<CastMedia> media = argResults.rest.map((String i) => CastMedia(contentId:  i)).toList();
+  castSender.loadPlaylist(
+      media
+  );
 
   stdin.lineMode = false;
   stdin.listen(_handleUserInput);
@@ -47,21 +52,32 @@ void startCasting() async {
 
 void _handleUserInput(List<int> data) {
 
-  if (null == castSender) return;
+  if (null == castSender || data.length == 0) return;
 
-  String input = utf8.decode(data);
-  print('input! ' + input);
-  if (input.length > 0) {
-    String key = input.split('').first.toLowerCase();
-    if (' ' == key) {
-      castSender.togglePause();
+  int keyCode = data.last;
+
+  if (32 == keyCode) {
+    // space
+    castSender.togglePause();
+  }
+  else if (101 == keyCode) {
+    // e == end
+    castSender.stop();
+  }
+  else if (115 == keyCode) {
+    // s
+
+  }
+  else if (67 == keyCode || 68 == keyCode) {
+    // right or left
+    double seekBy = 67 == keyCode ? 10.0 : -10.0;
+    if (null != castSender.castSession && null != castSender.castSession.castMediaStatus) {
+
+      castSender.seek(
+          max(0.0, castSender.castSession.castMediaStatus.position + seekBy),
+      );
     }
-    else if ('e' == key) {
-      castSender.stop();
-    }
-    else if ('s' == key) {
-      castSender.seek(10.0);
-    }
+
   }
 
 }

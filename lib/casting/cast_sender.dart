@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:dart_chromecast/casting/cast_device.dart';
+import 'package:dart_chromecast/casting/cast_media.dart';
+import 'package:dart_chromecast/casting/cast_media_status.dart';
+import 'package:dart_chromecast/casting/cast_session.dart';
 import 'package:dart_chromecast/casting/connection_channel.dart';
 import 'package:dart_chromecast/casting/heartbeat_channel.dart';
 import 'package:dart_chromecast/casting/media_channel.dart';
@@ -23,12 +26,15 @@ class CastSender {
   ReceiverChannel _receiverChannel;
   MediaChannel _mediaChannel;
 
+  Timer _heartbeatTimer;
+  Timer _mediaCurrentTimeTimer;
+
   bool _mediaReady = false;
-  Map _mediaStatus;
-  List<String> _contentQueue;
+  CastSession _castSession;
+  List<CastMedia> _contentQueue;
 
   CastSender(this.device) {
-      // _airplay._tcp > todo?
+      // TODO: _airplay._tcp
     _contentQueue = [];
     sourceId = 'client-${Random().nextInt(99999)}';
   }
@@ -37,7 +43,12 @@ class CastSender {
 
     // connect to socket
     try {
-      _socket = await SecureSocket.connect(device.host, device.port, onBadCertificate: (X509Certificate certificate) => true);
+      print('Connecting to ${device.host}:${device.port}');
+      _socket = await SecureSocket.connect(
+          device.host,
+          device.port,
+          onBadCertificate: (X509Certificate certificate) => true,
+         timeout: Duration(seconds: 10));
     }
     catch(e) {
       print(e.toString());
@@ -70,64 +81,59 @@ class CastSender {
     }
   }
 
-  void load(String contentId, [forceNext = true]) {
-    loadPlaylist([contentId], forceNext);
+  void load(CastMedia media, [forceNext = true]) {
+    loadPlaylist([media], forceNext);
   }
 
-  void loadPlaylist(List<String> contentIds, [forceNext = false]) {
-    _contentQueue = contentIds;
+  void loadPlaylist(List<CastMedia> media, [forceNext = false]) {
+    _contentQueue = media;
     if (null != _mediaChannel) {
       _handleContentQueue(forceNext);
     }
   }
 
-  void play() {
-    if (null != _mediaChannel && null != _mediaStatus && null != _mediaStatus['mediaSessionId']) {
-      _mediaChannel.sendMessage({
-        'mediaSessionId': _mediaStatus['mediaSessionId'],
-        'type': 'PLAY',
-      });
+  void _castMediaAction(type, [params]) {
+    if (null == params) params = {};
+    if (null != _mediaChannel && null != _castSession && null != _castSession.castMediaStatus) {
+      _mediaChannel.sendMessage(params..addAll({
+        'mediaSessionId': _castSession.castMediaStatus.sessionId,
+        'type': type,
+      }));
     }
+  }
+
+  void play() {
+    _castMediaAction('PLAY');
   }
 
   void pause() {
-    if (null != _mediaChannel && null != _mediaStatus && null != _mediaStatus['mediaSessionId']) {
-      _mediaChannel.sendMessage({
-        'mediaSessionId': _mediaStatus['mediaSessionId'],
-        'type': 'PAUSE',
-      });
-    }
+    _castMediaAction('PAUSE');
   }
 
   void togglePause() {
-    if (null != _mediaChannel && null != _mediaStatus && null != _mediaStatus['mediaSessionId']) {
-      if ('PLAYING' == _mediaStatus['playerState']) {
-        pause();
-      }
-      else if ('PAUSED' == _mediaStatus['playerState']) {
-        play();
-      }
+    if (null != _castSession && null != _castSession.castMediaStatus && !_castSession.castMediaStatus.isPaused) {
+      pause();
+    }
+    else {
+      play();
     }
   }
 
   void stop() {
-    if (null != _mediaChannel && null != _mediaStatus && null != _mediaStatus['mediaSessionId']) {
-      _mediaChannel.sendMessage({
-        'mediaSessionId': _mediaStatus['mediaSessionId'],
-        'type': 'STOP',
-      });
-    }
+    _castMediaAction('STOP');
   }
 
   void seek(double time) {
-    if (null != _mediaChannel && null != _mediaStatus && null != _mediaStatus['mediaSessionId']) {
-      _mediaChannel.sendMessage({
-        'mediaSessionId': _mediaStatus['mediaSessionId'],
-        'type': 'SEEK',
-        'currentTime': time
-      });
-    }
+    Map<String, dynamic> map = { 'currentTime': time };
+    _castMediaAction('SEEK', map);
   }
+
+  void setVolume(double volume) {
+    Map<String, dynamic> map = { 'volume': min(volume, 1)};
+    _castMediaAction('VOLUME', map);
+  }
+
+  CastSession get castSession => _castSession;
 
   // private
   void _onSocketData(List<int> event) {
@@ -158,6 +164,7 @@ class CastSender {
       if (null == destinationId) {
         destinationId = payload['status']['applications'][0]['transportId'] ?? payload['status']['applications'][0]['sessionId'];
         // re-create the channel with the transportId the chromecast just sent us
+        _castSession = CastSession.fromChromeCastSessionMap(payload['status']['applications'][0]);
         _connectionChannel = ConnectionChannel.CreateWithSocket(_socket, sourceId: sourceId, destinationId: destinationId);
         _connectionChannel.sendMessage({
           'type': 'CONNECT'
@@ -172,50 +179,73 @@ class CastSender {
 
   void _handleMediaStatus(Map payload) {
     // Todo: only start playing the first time we get a valid media status...
+
+    if (null != payload['status'] && payload['status'].length > 0) {
+      _castSession.castMediaStatus = CastMediaStatus.fromChromeCastMediaStatus(
+          payload['status'][0]
+      );
+      print('Media status ${_castSession.castMediaStatus.toString()}');
+      if (_castSession.castMediaStatus.isFinished) {
+        _handleContentQueue();
+      }
+      if (_castSession.castMediaStatus.isPlaying) {
+          _mediaCurrentTimeTimer = Timer(Duration(seconds: 1), _getMediaCurrentTime);
+      }
+      else if (_castSession.castMediaStatus.isPaused && null != _mediaCurrentTimeTimer) {
+        _mediaCurrentTimeTimer.cancel();
+        _mediaCurrentTimeTimer = null;
+      }
+    }
+
     if (!_mediaReady) {
       // first media status; chromecast is ready.
       _handleContentQueue();
       _mediaReady = true;
     }
 
-    if (null != payload['status'] && payload['status'].length > 0) {
-      _mediaStatus = payload['status'][0];
-      if ('IDLE' == _mediaStatus['playerState'] && 'FINISHED' == _mediaStatus['idleReason']) {
-        _handleContentQueue();
-      }
-    }
   }
 
   _handleContentQueue([forceNext = false]) {
     if (null == _mediaChannel || _contentQueue.length == 0) {
       return;
     }
-    String nextContentId = _contentQueue.elementAt(0);
+    if (null != _castSession &&
+        null != _castSession.castMediaStatus &&
+        !_castSession.castMediaStatus.isFinished &&
+        !forceNext) {
+      // don't handle the next in the content queue, because we only want
+      // to play the 'next' content if it's not already playing.
+      return;
+    }
+    CastMedia nextContentId = _contentQueue.elementAt(0);
     if (null != nextContentId) {
       _contentQueue = _contentQueue.getRange(1, _contentQueue.length).toList();
+      _mediaChannel.sendMessage(
+        nextContentId.toChromeCastMap()
+      );
+    }
+  }
+
+  void _getMediaCurrentTime() {
+
+    if (null != _mediaChannel && null != _castSession && null != _castSession.castMediaStatus &&  _castSession.castMediaStatus.isPlaying) {
       _mediaChannel.sendMessage({
-        'type': 'LOAD',
-        'autoPlay': true,
-        'currentTime': 0,
-        'activeTracks': [],
-        'media': {
-          'contentId': nextContentId,
-          'contentType': 'video/mp4',
-          'streamType': 'BUFFERED',
-        },
+        'type': 'GET_STATUS',
       });
     }
+
   }
 
   void _heartbeatTick() {
 
-    _heartbeatChannel.sendMessage({
-      'type': 'PING'
-    });
+    if (null != _heartbeatChannel) {
+      _heartbeatChannel.sendMessage({
+        'type': 'PING'
+      });
 
-    Timer(Duration(seconds: 5), _heartbeatTick);
+      _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
+    }
 
   }
-
 
 }
