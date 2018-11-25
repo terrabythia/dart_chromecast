@@ -9,7 +9,7 @@ class CastSession {
   bool isConnected;
   bool isReadyForMedia = false;
 
-  CastSession({ this.sourceId, this.destinationId, this.isConnected = false});
+  CastSession({ this.sourceId, this.destinationId, this.isConnected = false });
 
   // create from chromecast map
   void mergeWithChromeCastSessionMap(Map map) {

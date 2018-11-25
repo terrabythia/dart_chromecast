@@ -82,11 +82,29 @@ class CastSender extends Object {
       'type': 'GET_STATUS'
     });
 
-//    print('GOT GET STATUS RESULT: ' + payload.toString());
-
     // now wait for the media to actually get a status?
-    return await _waitForMediaStatus();
+    bool didReconnect = await _waitForMediaStatus();
+    if (didReconnect) {
+      print('reconnecting successful!');
+      castSessionController.add(
+          _castSession
+      );
+      castMediaStatusController.add(
+        _castSession.castMediaStatus
+      );
+    }
+    return didReconnect;
+  }
 
+  Future<bool> disconnect() async {
+    if (null != _connectionChannel && null != _castSession) {
+      _connectionChannel.sendMessage({
+        'type': 'STOP',
+        'sessionId': _castSession.castMediaStatus.sessionId,
+      });
+      return await _waitForDisconnection();
+    }
+    return false;
   }
 
   void launch([String appId]) {
@@ -116,7 +134,7 @@ class CastSender extends Object {
 
   void _castMediaAction(type, [params]) {
     if (null == params) params = {};
-    if (null != _mediaChannel && null != _castSession.castMediaStatus) {
+    if (null != _mediaChannel && null != _castSession?.castMediaStatus) {
       _mediaChannel.sendMessage(params..addAll({
         'mediaSessionId': _castSession.castMediaStatus.sessionId,
         'type': type,
@@ -134,11 +152,11 @@ class CastSender extends Object {
 
   void togglePause() {
     print(_castSession.toString());
-    if (null != _castSession.castMediaStatus && _castSession.castMediaStatus.isPlaying) {
+    if (true == _castSession?.castMediaStatus?.isPlaying) {
       print('PAUSE');
       pause();
     }
-    else if (null != _castSession.castMediaStatus && _castSession.castMediaStatus.isPaused){
+    else if (true == _castSession?.castMediaStatus?.isPaused){
       print('PLAY');
       play();
     }
@@ -217,7 +235,7 @@ class CastSender extends Object {
 
   void _handleReceiverStatus(Map payload) {
     print(payload.toString());
-    if (null == _mediaChannel && null != payload['status'] && null != payload['status']['applications']) {
+    if (null == _mediaChannel && true == payload['status']?.containsKey('applications')) {
       // re-create the channel with the transportId the chromecast just sent us
       if (!_castSession.isConnected) {
         _castSession = _castSession..mergeWithChromeCastSessionMap(payload['status']['applications'][0]);
@@ -243,6 +261,19 @@ class CastSender extends Object {
       if (connectionDidClose) return false;
     }
     return _castSession.isConnected;
+  }
+
+  Future<bool> _waitForDisconnection() async {
+    int timeout = (10 * 1000); // 10 seconds
+    while(!connectionDidClose) {
+      await Future.delayed(Duration(milliseconds: 100));
+      timeout -= 100;
+      if (timeout <= 0) {
+        break;
+      }
+    }
+    await _socket.close();
+    return true;
   }
 
   void _handleMediaStatus(Map payload) {
@@ -302,7 +333,7 @@ class CastSender extends Object {
 
   void _getMediaCurrentTime() {
 
-    if (null != _mediaChannel && null != _castSession.castMediaStatus &&  _castSession.castMediaStatus.isPlaying) {
+    if (null != _mediaChannel && true == _castSession?.castMediaStatus?.isPlaying) {
       _mediaChannel.sendMessage({
         'type': 'GET_STATUS',
       });

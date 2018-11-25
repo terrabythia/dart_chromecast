@@ -16,6 +16,7 @@ class CastMediaStatus {
   final bool _isBuffering;
   final double _volume;
   final double _position;
+  final Map _media;
 
   CastMediaStatus.fromChromeCastMediaStatus(Map mediaStatus)
       : _sessionId = mediaStatus['mediaSessionId'],
@@ -30,7 +31,8 @@ class CastMediaStatus {
         _isCancelled = 'IDLE' == mediaStatus['playerState'] && 'CANCELLED' == mediaStatus['idleReason'],
         _hasError = 'IDLE' == mediaStatus['playerState'] && 'ERROR' == mediaStatus['idleReason'],
         _volume = null != mediaStatus['volume'] ? mediaStatus['volume']['level'].toDouble() : null,
-        _position = mediaStatus['currentTime'].toDouble();
+        _position = mediaStatus['currentTime'].toDouble(),
+        _media = mediaStatus['media'];
 
 
   // TODO: implement
@@ -62,6 +64,8 @@ class CastMediaStatus {
 
   double get position => _position;
 
+  Map get media => _media;
+
   @override
   String toString() {
     return jsonEncode({
@@ -78,6 +82,7 @@ class CastMediaStatus {
       'hasError': _hasError,
       'volume': _volume,
       'position': _position,
+      'media': _media
     });
   }
 
