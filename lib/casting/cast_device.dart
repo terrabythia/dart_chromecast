@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
 import 'package:observable/observable.dart';
@@ -8,6 +10,13 @@ enum CastDeviceType {
   AppleTV,
 }
 
+enum CastModel {
+  GoogleHome,
+  GoogleMini,
+  ChromeCastAudio,
+  ChromeCast,
+}
+
 class CastDevice extends ChangeNotifier {
 
   final String name;
@@ -16,6 +25,8 @@ class CastDevice extends ChangeNotifier {
   final int port;
 
   String _friendlyName;
+
+  CastModel castModel;
 
   CastDevice({
     this.name,
@@ -35,7 +46,20 @@ class CastDevice extends ChangeNotifier {
             document.findElements('root').first
             .findElements('device').first;
         _friendlyName = deviceElement.findElements('friendlyName').first.text;
+
+        //This only works for chromecasts video
+        castModel = CastModel.ChromeCast;
+
         notifyChange();
+      }).catchError((error){
+        // Try the eureka method
+        http.get('http://${host}:8008/setup/eureka_info').then((response){
+          if (response.statusCode == 200) {
+            Map homeMap = json.decode(response.body);
+            _friendlyName = homeMap['name'];
+
+          }
+        });
       });
     }
     else if (CastDeviceType.AppleTV == deviceType) {

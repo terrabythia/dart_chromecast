@@ -4,6 +4,8 @@ environment:
   sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
+  flutter:
+    sdk: flutter
   protobuf: any
   http: any
   cli_util: ^0.1.3+2

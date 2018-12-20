@@ -12,6 +12,8 @@ import 'package:dart_chromecast/casting/media_channel.dart';
 import 'package:dart_chromecast/casting/receiver_channel.dart';
 import 'package:dart_chromecast/proto/cast_channel.pb.dart';
 
+import 'package:flutter/foundation.dart';
+
 class CastSender extends Object {
 
   final CastDevice device;
@@ -32,9 +34,23 @@ class CastSender extends Object {
   StreamController<CastSession> castSessionController;
   StreamController<CastMediaStatus> castMediaStatusController;
   List<CastMedia> _contentQueue;
+  
+  VoidCallback _volumeChangedCallback;
+  double currentVolume;
+
+  String _whatIsPlaying;
+  String contentProvider="Currently playing";
+  String currentAppSessionID;
+  String iconUrl;
+
+
+
+  void setVolumeChangedCallback(VoidCallback volumeChangedCallBack){
+    _volumeChangedCallback = volumeChangedCallBack;
+  }
 
   CastSender(this.device) {
-      // TODO: _airplay._tcp
+    // TODO: _airplay._tcp
     _contentQueue = [];
     castSessionController = StreamController.broadcast();
     castMediaStatusController = StreamController.broadcast();
@@ -90,7 +106,7 @@ class CastSender extends Object {
           _castSession
       );
       castMediaStatusController.add(
-        _castSession.castMediaStatus
+          _castSession.castMediaStatus
       );
     }
     return didReconnect;
@@ -142,6 +158,15 @@ class CastSender extends Object {
     }
   }
 
+  void _castReceiverAction(type, [params]) {
+    if (null == params) params = {};
+    if (null != _receiverChannel) {
+      _receiverChannel.sendMessage(params..addAll({
+        'type': type,
+      }));
+    }
+  }
+
   void play() {
     _castMediaAction('PLAY');
   }
@@ -172,8 +197,8 @@ class CastSender extends Object {
   }
 
   void setVolume(double volume) {
-    Map<String, dynamic> map = { 'volume': min(volume, 1)};
-    _castMediaAction('VOLUME', map);
+    Map<String, dynamic> map = { 'volume': {"level":min(volume, 1)}};
+    _castReceiverAction('SET_VOLUME', map);
   }
 
   CastSession get castSession => _castSession;
@@ -222,6 +247,7 @@ class CastSender extends Object {
         if ('CLOSE' == payloadMap['type']) {
           _dispose();
           connectionDidClose = true;
+          _volumeChangedCallback();
         }
         if ('RECEIVER_STATUS' == payloadMap['type']) {
           _handleReceiverStatus(payloadMap);
@@ -233,8 +259,71 @@ class CastSender extends Object {
     }
   }
 
+  void getVolumeRequest(){
+    if (null != _receiverChannel) {
+      _receiverChannel.sendMessage({
+        'type': 'GET_STATUS',
+      });
+    }
+  }
+
+  void killAppRunning(){
+    print("----------------------------------------------------------TRYING TO KILL:");
+    print(currentAppSessionID);
+
+    if (null != _receiverChannel && currentAppSessionID != null) {
+      _receiverChannel.sendMessage({
+       "type": "STOP",
+      "sessionId": currentAppSessionID
+      }
+      );
+    }
+  }
+
+  double getCurrentVolume(){
+    return currentVolume;
+  }
+
+  String getCurrentPlaying(){
+
+    if (null != _mediaChannel && null != _castSession?.castMediaStatus){
+
+    } else{
+      _whatIsPlaying = null;
+    }
+
+    return _whatIsPlaying;
+  }
+
   void _handleReceiverStatus(Map payload) {
     print(payload.toString());
+    try{
+      double newVolume = payload["status"]["volume"]["level"];
+      if (newVolume != currentVolume){
+        currentVolume = newVolume;
+        _volumeChangedCallback();
+      }
+
+    }
+    catch(e){
+      //print(e);
+    }
+
+    try{
+      currentAppSessionID = payload["status"]["applications"][0]["sessionId"];
+    } catch(e){
+      //print(e);
+    }
+    try{
+      iconUrl = payload["status"]["applications"][0]["iconUrl"];
+    } catch(e){
+      //print(e);
+    }
+
+
+
+
+
     if (null == _mediaChannel && true == payload['status']?.containsKey('applications')) {
       // re-create the channel with the transportId the chromecast just sent us
       if (!_castSession.isConnected) {
@@ -295,6 +384,29 @@ class CastSender extends Object {
           _handleContentQueue();
         }
         if (_castSession.castMediaStatus.isPlaying) {
+          // Try to get name of song if spotify is playing
+          print(_castSession.castMediaStatus.sessionId);
+          try {
+
+            if(_castSession.castMediaStatus.media["contentType"]=="x-youtube/video"){
+              contentProvider = "Youtube";
+            } else if (_castSession.castMediaStatus.media["contentType"]=="application/x-spotify.track"){
+              contentProvider = "Spotify";
+            } else {
+              contentProvider = "Currently playing";
+            }
+
+            var newPlaying = _castSession.castMediaStatus.media['metadata']['title'];
+            if(newPlaying != _whatIsPlaying){
+              _whatIsPlaying = newPlaying;
+              _volumeChangedCallback();
+            }
+
+            print(_whatIsPlaying);
+
+          } catch (e) {
+            print("NO TRACK TITLE AVAILABLE");
+          }
           _mediaCurrentTimeTimer = Timer(Duration(seconds: 1), _getMediaCurrentTime);
         }
         else if (_castSession.castMediaStatus.isPaused && null != _mediaCurrentTimeTimer) {
@@ -326,7 +438,7 @@ class CastSender extends Object {
     if (null != nextContentId) {
       _contentQueue = _contentQueue.getRange(1, _contentQueue.length).toList();
       _mediaChannel.sendMessage(
-        nextContentId.toChromeCastMap()
+          nextContentId.toChromeCastMap()
       );
     }
   }
@@ -347,6 +459,9 @@ class CastSender extends Object {
       _heartbeatChannel.sendMessage({
         'type': 'PING'
       });
+
+      // Update volumes with hearthbeat
+      getVolumeRequest();
 
       _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
     }
