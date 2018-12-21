@@ -37,6 +37,8 @@ class CastSender extends Object {
   
   VoidCallback _volumeChangedCallback;
   double currentVolume;
+  int currentBassGain;
+  int currentTrebleGain;
 
   String _whatIsPlaying;
   String contentProvider="Currently playing";
@@ -284,6 +286,14 @@ class CastSender extends Object {
     return currentVolume;
   }
 
+  int getCurrentBass(){
+    return currentBassGain;
+  }
+
+  int getCurrentTrebl(){
+    return currentTrebleGain;
+  }
+
   String getCurrentPlaying(){
 
     if (null != _mediaChannel && null != _castSession?.castMediaStatus){
@@ -297,17 +307,44 @@ class CastSender extends Object {
 
   void _handleReceiverStatus(Map payload) {
     print(payload.toString());
-    try{
+
+
+      bool refresh = false;
+
+
+    try {
+      int newTreble = payload["status"]["userEq"]["high_shelf"]["gain_db"];
+      int newBass = payload["status"]["userEq"]["low_shelf"]["gain_db"];
+      if(newBass!= null && newTreble != null){
+              if(newBass!=currentBassGain){
+                currentBassGain = newBass;
+                refresh = true;
+              }
+              if(newTreble!=currentTrebleGain){
+                currentTrebleGain = newTreble;
+                refresh = true;
+              }
+            }
+    } catch (e) {
+      //print(e);
+    }
+
+    try {
       double newVolume = payload["status"]["volume"]["level"];
       if (newVolume != currentVolume){
-        currentVolume = newVolume;
+              currentVolume = newVolume;
+              refresh = true;
+            }
+    } catch (e) {
+      //print(e);
+    }
+
+      // Only update UI if new values
+      if(refresh){
         _volumeChangedCallback();
       }
 
-    }
-    catch(e){
-      //print(e);
-    }
+
 
     try{
       currentAppSessionID = payload["status"]["applications"][0]["sessionId"];

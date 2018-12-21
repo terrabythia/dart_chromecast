@@ -47,8 +47,6 @@ class CastDevice extends ChangeNotifier {
             .findElements('device').first;
         _friendlyName = deviceElement.findElements('friendlyName').first.text;
 
-        //This only works for chromecasts video
-        castModel = CastModel.ChromeCast;
 
         notifyChange();
       }).catchError((error){
@@ -57,6 +55,7 @@ class CastDevice extends ChangeNotifier {
           if (response.statusCode == 200) {
             Map homeMap = json.decode(response.body);
             _friendlyName = homeMap['name'];
+            notifyChange();
 
           }
         });
@@ -82,7 +81,8 @@ class CastDevice extends ChangeNotifier {
     if (null != _friendlyName) {
       return _friendlyName;
     }
-    return name;
+    // We want null for when the friendlyname is not updated yet. We deal with null case outside of this.
+    return null;
   }
 
 }
