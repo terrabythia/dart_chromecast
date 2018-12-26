@@ -13,8 +13,10 @@ enum CastDeviceType {
 enum CastModel {
   GoogleHome,
   GoogleMini,
+  GoogleMax,
   ChromeCastAudio,
   ChromeCast,
+  CastGroup,
 }
 
 class CastDevice extends ChangeNotifier {
@@ -79,9 +81,10 @@ class CastDevice extends ChangeNotifier {
   int compareTo(CastDevice b) {
     switch (this.castModel) {
       case CastModel.GoogleHome:
+      case CastModel.GoogleMax:
       case CastModel.GoogleMini:
         // If b is not a Google home, return 1 because a is smaller (in list order) than b
-        if (b.castModel == CastModel.ChromeCastAudio || b.castModel == CastModel.ChromeCast) {
+        if (b.castModel == CastModel.ChromeCastAudio || b.castModel == CastModel.ChromeCast || b.castModel == CastModel.CastGroup) {
           return -1;
         } else {
           return this.host.compareTo(b.host);
@@ -90,7 +93,17 @@ class CastDevice extends ChangeNotifier {
       case CastModel.ChromeCast:
       case CastModel.ChromeCastAudio:
         // if a is chromecast and b is home, return -1 because a is bigger (in list order)
-        if (b.castModel == CastModel.GoogleHome || b.castModel == CastModel.GoogleMini) {
+        if (b.castModel == CastModel.GoogleHome || b.castModel == CastModel.GoogleMini || b.castModel == CastModel.GoogleMax) {
+          return 1;
+        } else if( b.castModel == CastModel.CastGroup){
+          return -1; // Before castGroup in list
+        }
+        else {
+          return this.host.compareTo(b.host);
+        }
+        break;
+      case CastModel.CastGroup:
+        if(b.castModel != CastModel.CastGroup){
           return 1;
         } else {
           return this.host.compareTo(b.host);
