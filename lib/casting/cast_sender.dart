@@ -46,6 +46,8 @@ class CastSender extends Object {
   String iconUrl;
 
 
+  // OVERRIDE FOR PRINT
+  void print(dynamic theString){}
 
   void setVolumeChangedCallback(VoidCallback volumeChangedCallBack){
     _volumeChangedCallback = volumeChangedCallBack;
