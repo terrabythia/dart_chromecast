@@ -34,7 +34,8 @@ class CastSender extends Object {
   StreamController<CastSession> castSessionController;
   StreamController<CastMediaStatus> castMediaStatusController;
   List<CastMedia> _contentQueue;
-  
+  CastMedia _currentCastMedia;
+
   VoidCallback _volumeChangedCallback;
   double currentVolume;
   int currentBassGain;
@@ -117,14 +118,18 @@ class CastSender extends Object {
   }
 
   Future<bool> disconnect() async {
-    if (null != _connectionChannel && null != _castSession) {
+    if (null != _connectionChannel && null != _castSession?.castMediaStatus) {
       _connectionChannel.sendMessage({
-        'type': 'STOP',
+        'type': 'CLOSE',
         'sessionId': _castSession.castMediaStatus.sessionId,
       });
-      return await _waitForDisconnection();
     }
-    return false;
+    if (null != _socket) {
+      await _socket.destroy();
+    }
+    _dispose();
+    connectionDidClose = true;
+    return true;
   }
 
   void launch([String appId]) {
@@ -458,6 +463,13 @@ class CastSender extends Object {
         );
 
       }
+      else {
+        print("Media status is empty");
+        if (null == _currentCastMedia && _contentQueue.length > 0) {
+          print("no media is currently being casted, try to cast first in queue");
+          _handleContentQueue();
+        }
+      }
     }
 
   }
@@ -473,11 +485,11 @@ class CastSender extends Object {
       // to play the 'next' content if it's not already playing.
       return;
     }
-    CastMedia nextContentId = _contentQueue.elementAt(0);
-    if (null != nextContentId) {
+    _currentCastMedia = _contentQueue.elementAt(0);
+    if (null != _currentCastMedia) {
       _contentQueue = _contentQueue.getRange(1, _contentQueue.length).toList();
       _mediaChannel.sendMessage(
-          nextContentId.toChromeCastMap()
+          _currentCastMedia.toChromeCastMap()
       );
     }
   }
