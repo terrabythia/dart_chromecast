@@ -70,39 +70,7 @@ class CastDevice extends ChangeNotifier {
     }
   }
 
-//  CastDevice({
-//    this.name,
-//    this.type,
-//    this.host,
-//    this.port,
-//  }) {
-//    // fetch device info if possible
-//    if (CastDeviceType.ChromeCast == deviceType) {
-//      http.get('http://${host}:8008/ssdp/device-desc.xml').then((response) {
-//        print("Response status: ${response.statusCode}");
-//        print("Response body: ${response.body}");
-//        xml.XmlDocument document = xml.parse(response.body);
-//        xml.XmlElement deviceElement = document.findElements('root').first.findElements('device').first;
-//        _friendlyName = deviceElement.findElements('friendlyName').first.text;
-//
-//        notifyChange();
-//      }).catchError((error) {
-//        // Try the eureka method
-//        http.get('http://${host}:8008/setup/eureka_info').then((response) {
-//          if (response.statusCode == 200) {
-//            Map homeMap = json.decode(response.body);
-//            _friendlyName = homeMap['name'];
-//            notifyChange();
-//          }
-//        });
-//      });
-//    } else if (CastDeviceType.AppleTV == deviceType) {
-//      // todo
-//    }
-//  }
-//
-//
-//
+
   CastDeviceType get deviceType {
     if (type.startsWith('_googlecast._tcp')) {
       return CastDeviceType.ChromeCast;
@@ -112,13 +80,7 @@ class CastDevice extends ChangeNotifier {
     return CastDeviceType.Unknown;
   }
 
-/*  String get friendlyName {
-    if (null != _friendlyName) {
-      return _friendlyName;
-    }
-    // We want null for when the friendlyname is not updated yet. We deal with null case outside of this.
-    return null;
-  }*/
+
 
   /// Comparator
   /// In a List, the order will be:
@@ -167,7 +129,5 @@ class CastDevice extends ChangeNotifier {
         break;
     }
 
-    // Error
-    return -1;
   }
 }
