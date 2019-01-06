@@ -135,6 +135,8 @@ void _handleUserInput(List<int> data) {
 
   int keyCode = data.last;
 
+  print("Key pressed: $keyCode");
+
   if (32 == keyCode) {
     // space = toggle pause
     castSender.togglePause();
@@ -142,6 +144,10 @@ void _handleUserInput(List<int> data) {
   else if (115 == keyCode) {
     // s == stop
     castSender.stop();
+  }
+  else if (27 == keyCode) {
+    // escape = disconnect
+    castSender.disconnect();
   }
   else if (67 == keyCode || 68 == keyCode) {
     // left or right = seek 10s back or forth
