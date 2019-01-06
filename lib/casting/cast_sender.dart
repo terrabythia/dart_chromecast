@@ -36,11 +36,15 @@ class CastSender extends Object {
   List<CastMedia> _contentQueue;
   CastMedia _currentCastMedia;
 
+  /// Callback when volume is changed. Can also be used as a general purpose callback. I really should rename this...
   VoidCallback _volumeChangedCallback;
+
+  // Volume and sound info
   double currentVolume;
   int currentBassGain;
   int currentTrebleGain;
 
+  // Infos for what is currently playing
   String _whatIsPlaying;
   String contentProvider="Currently playing";
   String currentAppSessionID;
