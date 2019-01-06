@@ -21,5 +21,14 @@ so this cli project does not include a mdns browser, you should find out what th
 ### usage
 `dart index.dart <media> --host <host> --port <port> [--append]` 
 
+### playback control
+In this demo the following keys can be used to control the playback of the video:
+
+`space` toggle paused state \
+`s` stop playback \
+`esc` disconnect device \
+`left arrow key` seek -10 seconds \
+`right arrow key` seek +10 seconds
+
 ### example
 `dart index.dart http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4 --host=192.168.1.1`
