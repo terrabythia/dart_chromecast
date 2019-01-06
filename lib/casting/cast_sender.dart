@@ -51,11 +51,20 @@ class CastSender extends Object {
   String contentProvider="Currently playing";
   String currentAppSessionID;
   String iconUrl;
+  String displayAppName;
 
 
   // OVERRIDE FOR PRINT
   void print(dynamic theString){}
 
+  /// The callback you set is called everytime:
+  ///
+  /// * the volume (or bass/treble) is changed
+  /// * media playback changes (new song, etc.)
+  /// * A device is removed
+  ///
+  /// It is called even when these things are changed from somewhere else
+  /// (ie: you change the volume on the device itself)
   void setVolumeChangedCallback(VoidCallback volumeChangedCallBack){
     _volumeChangedCallback = volumeChangedCallBack;
   }
@@ -364,13 +373,20 @@ class CastSender extends Object {
     } catch(e){
       //print(e);
     }
+
     try{
       iconUrl = payload["status"]["applications"][0]["iconUrl"];
     } catch(e){
       //print(e);
     }
 
-
+    try{
+      displayAppName = payload["status"]["applications"][0]["displayName"];
+      print(displayAppName);
+    } catch(e){
+      //print(e);
+      displayAppName = null;
+    }
 
 
 
@@ -438,11 +454,12 @@ class CastSender extends Object {
           print(_castSession.castMediaStatus.sessionId);
           try {
 
-            if(_castSession.castMediaStatus.media["contentType"]=="x-youtube/video"){
-              contentProvider = "Youtube";
-            } else if (_castSession.castMediaStatus.media["contentType"]=="application/x-spotify.track"){
-              contentProvider = "Spotify";
-            } else {
+            print("xxxxxxx : "+_castSession.castMediaStatus.media.toString());
+
+            // TODO check if Youtube can simply use displayAppName
+            if(displayAppName!=null){
+              contentProvider = displayAppName;
+            } else{
               contentProvider = "Currently playing";
             }
 
