@@ -12,7 +12,9 @@ import 'package:dart_chromecast/casting/media_channel.dart';
 import 'package:dart_chromecast/casting/receiver_channel.dart';
 import 'package:dart_chromecast/proto/cast_channel.pb.dart';
 
-import 'package:flutter/foundation.dart';
+
+typedef void VoidCallback();
+
 
 class CastSender extends Object {
 

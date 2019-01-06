@@ -1,10 +1,10 @@
-# dart_chromecast for Flutter
-Flutter Package for Cast control
+# dart_chromecast for Flutter (and dart?)
+Flutter Package for Cast control but I think it is back to Dart only 🙂
 
 Based on the Dart only version found at [https://github.com/terrabythia/dart_chromecast]
 
-This version of the package only works in Flutter and handles Model names.
-It has a callback so you can update the Flutter UI if need be.
+This version of the package handles Model names.
+It has a callback so you can update the Flutter UI (or your dart app) if need be.
 
 ### Model names
 The supported model names (enum of type `CastModel`) are:
