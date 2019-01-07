@@ -1,5 +1,8 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:convert' show utf8;
+import 'dart:typed_data';
+
 import 'package:observable/observable.dart';
 
 enum CastDeviceType {
@@ -15,6 +18,20 @@ class CastDevice extends ChangeNotifier {
   final String host;
   final int port;
 
+  /// Contains the information about the device.
+  /// You can decode with utf8 a bunch of information
+  ///
+  /// * md - Model Name (e.g. "Chromecast");
+  /// * id - UUID without hyphens of the particular device (e.g. xx12x3x456xx789xx01xx234x56789x0);
+  /// * fn - Friendly Name of the device (e.g. "Living Room");
+  /// * rs - Unknown (recent share???) (e.g. "Youtube TV");
+  /// * bs - Unknown (e.g. "XX1XXX2X3456");
+  /// * st - Unknown (e.g. "1");
+  /// * ca - Unknown (e.g. "1234");
+  /// * ic - Icon path (e.g. "/setup/icon.png");
+  /// * ve - Version (e.g. "04").
+  final Map<String, Uint8List> attr;
+
   String _friendlyName;
 
   CastDevice({
@@ -22,38 +39,33 @@ class CastDevice extends ChangeNotifier {
     this.type,
     this.host,
     this.port,
+    this.attr
   }) {
 
-    // fetch device info if possible
-    if (CastDeviceType.ChromeCast == deviceType) {
-      // for now we only request name, because we only use it to get the 'friendly name'
-      // Possible parameters: version,audio,name,build_info,detail,device_info,net,wifi,setup,settings,opt_in,opencast,multizone,proxy,night_mode_params,user_eq,room_equalizer
-      // see: https://rithvikvibhu.github.io/GHLocalApi/#device-info
-      http.get('http://${host}:8008/setup/eureka_info?params=name')
-          .then((response) {
-        print("EUREKA: Response status: ${response.statusCode}");
-        print("EUREKA: Response body: ${response.body}");
-        Map deviceInfo = jsonDecode(response.body);
-        _friendlyName = deviceInfo['name'];
-        notifyChange();
-      });
-      // old way: xml from device-desc.xml
-//      http.get('http://${host}:8008/ssdp/device-desc.xml')
-//          .then((response) {
-//        print("Response status: ${response.statusCode}");
-//        print("Response body: ${response.body}");
-//        xml.XmlDocument document = xml.parse(response.body);
-//        xml.XmlElement deviceElement =
-//            document.findElements('root').first
-//            .findElements('device').first;
-//        _friendlyName = deviceElement.findElements('friendlyName').first.text;
-//        notifyChange();
-//      });
-    }
-    else if (CastDeviceType.AppleTV == deviceType) {
-      // todo
-    }
+    initDeviceInfo();
 
+  }
+
+  void initDeviceInfo() async {
+    if (CastDeviceType.ChromeCast == deviceType) {
+      if (null != attr && null != attr['fn']) {
+        _friendlyName = utf8.decode(attr['fn']);
+      }
+      else {
+        // Attributes are not guaranteed to be set, if not set fetch them via the eureka_info url
+        // Possible parameters: version,audio,name,build_info,detail,device_info,net,wifi,setup,settings,opt_in,opencast,multizone,proxy,night_mode_params,user_eq,room_equalizer
+        try {
+          http.Response response = await http.get(
+              'http://${host}:8008/setup/eureka_info?params=name,device_info');
+          Map deviceInfo = jsonDecode(response.body);
+          _friendlyName = deviceInfo['name'];
+        }
+        catch(exception) {
+          _friendlyName = 'Unknown';
+        }
+      }
+    }
+    notifyChange();
   }
 
   CastDeviceType get deviceType {
