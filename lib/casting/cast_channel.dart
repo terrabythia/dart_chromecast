@@ -22,7 +22,9 @@ abstract class CastChannel {
       _sourceId = sourceId,
       _destinationId = destinationId,
       _namespace = namespace;
-  
+
+  void print(dynamic theString){}
+
   void sendMessage(Map payload) async {
 
     payload['requestId'] = _requestId;

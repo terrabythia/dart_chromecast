@@ -32,3 +32,26 @@ In this demo the following keys can be used to control the playback of the video
 
 ### example
 `dart index.dart http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4 --host=192.168.1.1`
+
+### Model names
+This version of the package handles Model names.
+It has a callback so you can update the Flutter UI (or your dart app) if need be.
+
+The supported model names (enum of type `CastModel`) are:
+* GoogleMini
+* GoogleHome
+* GoogleMax
+* GoogleHub
+* ChromeCastAudio
+* ChromeCast
+* CastGroup
+* NonGoogle
+
+### Comparator
+
+`CastDevice` also has a comparator now, so you can sort a list of `CastDevice`. The order list is:
+
+
+1. Google Home, Google Mini, Google Max, Google Hub
+2. Chromecast, Chromecast Audio
+3. Casting Groups, Non-Google devices (ie: Sonos, etc.)
