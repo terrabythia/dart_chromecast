@@ -70,7 +70,7 @@ void startCasting() async {
 
   // Listen for media status updates, such as pausing, playing, seeking, playback etc.
   castSender.castMediaStatusController.stream.listen((CastMediaStatus mediaStatus) {
-    // TODO: do something?
+    // TODO: something?
     // show progress for example
   });
 

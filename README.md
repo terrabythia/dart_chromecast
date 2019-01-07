@@ -32,3 +32,9 @@ In this demo the following keys can be used to control the playback of the video
 
 ### example
 `dart index.dart http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4 --host=192.168.1.1`
+
+### reconnecting to active session
+When you exit the command line without disconnecting the device, the video will keep playing. 
+To reconnect without messing with the current playlist, just run the command without any media urls. Eg:
+
+`dart index.dart --host=192.168.1.1 `
