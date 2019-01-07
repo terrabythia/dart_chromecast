@@ -21,8 +21,10 @@ The supported model names (enum of type `CastModel`) are:
 
 `CastDevice` also has a comparator now, so you can sort a list of `CastDevice`. The order list is:
 
-```
-Home, mini, max, hub < Chromecast and Chromecast Audio < Cast Groups and Non Google devices (ie: Sonos, etc.)
-```
+
+1. Google Home, Google Mini, Google Max, Google Hub
+2. Chromecast, Chromecast Audio
+3. Casting Groups, Non-Google devices (ie: Sonos, etc.)
+
 
 

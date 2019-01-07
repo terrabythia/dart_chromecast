@@ -102,7 +102,10 @@ class CastDevice extends ChangeNotifier {
 
   /// Comparator
   /// In a List, the order will be:
-  /// Home,mini,max,hub < Chromecast and Audio < Cast Group and non google
+  ///
+  /// 1. Home,mini,max,hub
+  /// 2. Chromecast and Audio
+  /// 3. Cast Group and non google
   int compareTo(CastDevice b) {
     switch (this.castModel) {
       case CastModel.GoogleHome:
