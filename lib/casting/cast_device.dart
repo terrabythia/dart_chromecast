@@ -60,8 +60,16 @@ class CastDevice extends ChangeNotifier {
     if (attr != null) {
       modelName = utf8.decode(attr['md']);
       friendlyName = utf8.decode(attr['fn']);
-    }
 
+
+      defineModelName();
+      notifyChange();
+    } else {
+        fetchEurekaInfo();
+    }
+  }
+
+  void defineModelName() {
     switch (modelName) {
       case "Google Home":
         castModel = CastModel.GoogleHome;
@@ -88,7 +96,21 @@ class CastDevice extends ChangeNotifier {
         castModel = CastModel.NonGoogle;
         break;
     }
-    
+  }
+
+
+  void fetchEurekaInfo() async{
+    // Attributes are not guaranteed to be set, if not set fetch them via the eureka_info url
+    // Possible parameters: version,audio,name,build_info,detail,device_info,net,wifi,setup,settings,opt_in,opencast,multizone,proxy,night_mode_params,user_eq,room_equalizer
+    try {
+      http.Response response = await http.get(
+          'http://${host}:8008/setup/eureka_info?params=name,device_info');
+      Map deviceInfo = jsonDecode(response.body);
+      friendlyName = deviceInfo['name'];
+    }
+    catch (exception) {
+      friendlyName = 'Unknown';
+    }
   }
 
   CastDeviceType get deviceType {
@@ -112,7 +134,7 @@ class CastDevice extends ChangeNotifier {
       case CastModel.GoogleMax:
       case CastModel.GoogleMini:
       case CastModel.GoogleHub:
-        // If b is not a Google home, return -1 because a is smaller (in list order) than b
+      // If b is not a Google home, return -1 because a is smaller (in list order) than b
         if (b.castModel == CastModel.ChromeCastAudio ||
             b.castModel == CastModel.ChromeCast ||
             b.castModel == CastModel.CastGroup ||
@@ -124,7 +146,7 @@ class CastDevice extends ChangeNotifier {
         break;
       case CastModel.ChromeCast:
       case CastModel.ChromeCastAudio:
-        // if a is chromecast and b is home, a must go UNDER HOME
+      // if a is chromecast and b is home, a must go UNDER HOME
         if (b.castModel == CastModel.GoogleHome ||
             b.castModel == CastModel.GoogleMini ||
             b.castModel == CastModel.GoogleMax ||
@@ -147,7 +169,7 @@ class CastDevice extends ChangeNotifier {
         }
         break;
       default:
-        // Otherwise, do a comparison of IPs
+      // Otherwise, do a comparison of IPs
         return this.host.compareTo(b.host);
         break;
     }
