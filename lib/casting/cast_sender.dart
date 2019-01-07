@@ -65,7 +65,7 @@ class CastSender extends Object {
   /// OVERRIDE FOR PRINT
   ///
   /// This is there so print() is disabled in release versions. NOT FOR USE.
-  void print(dynamic theString) {}
+  //void print(dynamic theString) {}
 
   /// The callback you set is called everytime:
   ///
@@ -280,7 +280,9 @@ class CastSender extends Object {
         if ('CLOSE' == payloadMap['type']) {
           _dispose();
           connectionDidClose = true;
-          _volumeChangedCallback();
+          if (_volumeChangedCallback!=null) {
+            _volumeChangedCallback();
+          }
         }
         if ('RECEIVER_STATUS' == payloadMap['type']) {
           _handleReceiverStatus(payloadMap);
@@ -387,7 +389,9 @@ class CastSender extends Object {
 
     // Only update UI if new values
     if (refresh) {
-      _volumeChangedCallback();
+      if (_volumeChangedCallback != null) {
+        _volumeChangedCallback();
+      }
     }
 
     try {

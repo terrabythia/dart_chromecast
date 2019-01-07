@@ -57,8 +57,10 @@ class CastDevice extends ChangeNotifier {
   CastModel castModel;
 
   CastDevice({this.name, this.type, this.host, this.port, this.attr}) {
-    modelName = utf8.decode(attr['md']);
-    friendlyName = utf8.decode(attr['fn']);
+    if (attr != null) {
+      modelName = utf8.decode(attr['md']);
+      friendlyName = utf8.decode(attr['fn']);
+    }
 
     switch (modelName) {
       case "Google Home":
@@ -86,8 +88,8 @@ class CastDevice extends ChangeNotifier {
         castModel = CastModel.NonGoogle;
         break;
     }
+    
   }
-
 
   CastDeviceType get deviceType {
     if (type.startsWith('_googlecast._tcp')) {
@@ -97,8 +99,6 @@ class CastDevice extends ChangeNotifier {
     }
     return CastDeviceType.Unknown;
   }
-
-
 
   /// Comparator
   /// In a List, the order will be:
@@ -130,7 +130,8 @@ class CastDevice extends ChangeNotifier {
             b.castModel == CastModel.GoogleMax ||
             b.castModel == CastModel.GoogleHub) {
           return 1; // Go down under GoogleHome
-        } else if (b.castModel == CastModel.CastGroup || b.castModel == CastModel.NonGoogle) {
+        } else if (b.castModel == CastModel.CastGroup ||
+            b.castModel == CastModel.NonGoogle) {
           return -1; // Before castGroup and NonGoogle in list
         } else {
           return this.host.compareTo(b.host);
@@ -138,7 +139,8 @@ class CastDevice extends ChangeNotifier {
         break;
       case CastModel.NonGoogle:
       case CastModel.CastGroup:
-        if (b.castModel != CastModel.CastGroup && b.castModel != CastModel.NonGoogle) {
+        if (b.castModel != CastModel.CastGroup &&
+            b.castModel != CastModel.NonGoogle) {
           return 1;
         } else {
           return this.host.compareTo(b.host);
@@ -149,6 +151,5 @@ class CastDevice extends ChangeNotifier {
         return this.host.compareTo(b.host);
         break;
     }
-
   }
 }
