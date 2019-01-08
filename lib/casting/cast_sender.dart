@@ -64,11 +64,8 @@ class CastSender extends Object {
 
   /// OVERRIDE FOR PRINT
   ///
-  /// This is there so print() is disabled in release versions.
-  void customPrint(dynamic theString){
-    // Comment this remove all outputs
-    // print(theString);
-  }
+  /// This is there so print() is disabled in release versions. NOT FOR USE.
+  //void print(dynamic theString) {}
 
   /// The callback you set is called everytime:
   ///
@@ -128,7 +125,7 @@ class CastSender extends Object {
     // now wait for the media to actually get a status?
     bool didReconnect = await _waitForMediaStatus();
     if (didReconnect) {
-      customPrint('reconnecting successful!');
+      print('reconnecting successful!');
       castSessionController.add(_castSession);
       castMediaStatusController.add(_castSession.castMediaStatus);
     }
@@ -209,12 +206,12 @@ class CastSender extends Object {
 
   /// PLAY/PAUSE feature, uses [play()] and [pause()]
   void togglePause() {
-    customPrint(_castSession.toString());
+    print(_castSession.toString());
     if (true == _castSession?.castMediaStatus?.isPlaying) {
-      customPrint('PAUSE');
+      print('PAUSE');
       pause();
     } else if (true == _castSession?.castMediaStatus?.isPaused) {
-      customPrint('PLAY');
+      print('PLAY');
       play();
     }
   }
@@ -246,7 +243,7 @@ class CastSender extends Object {
   Future<SecureSocket> _createSocket() async {
     if (null == _socket) {
       try {
-        customPrint('Connecting to ${device.host}:${device.port}');
+        print('Connecting to ${device.host}:${device.port}');
 
         _socket = await SecureSocket.connect(device.host, device.port,
             onBadCertificate: (X509Certificate certificate) => true,
@@ -264,7 +261,7 @@ class CastSender extends Object {
 
         _socket.listen(_onSocketData, onDone: _dispose);
       } catch (e) {
-        customPrint(e.toString());
+        print(e.toString());
         return null;
       }
     }
@@ -279,7 +276,7 @@ class CastSender extends Object {
       // handle the message
       if (null != message.payloadUtf8) {
         Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
-        customPrint(payloadMap['type']);
+        print(payloadMap['type']);
         if ('CLOSE' == payloadMap['type']) {
           _dispose();
           connectionDidClose = true;
@@ -310,9 +307,9 @@ class CastSender extends Object {
   /// will kill the app (ie: Spotify, Youtube, etc.) currently playing. Resume
   /// will thus not work afterwards.
   void killAppRunning() {
-    customPrint(
+    print(
         "----------------------------------------------------------TRYING TO KILL:");
-    customPrint(_currentAppSessionID);
+    print(_currentAppSessionID);
 
     if (null != _receiverChannel && _currentAppSessionID != null) {
       _receiverChannel
@@ -359,7 +356,7 @@ class CastSender extends Object {
   }
 
   void _handleReceiverStatus(Map payload) {
-    customPrint(payload.toString());
+    print(payload.toString());
 
     bool refresh = false;
 
@@ -377,7 +374,7 @@ class CastSender extends Object {
         }
       }
     } catch (e) {
-      //customPrint(e);
+      //print(e);
     }
 
     try {
@@ -387,7 +384,7 @@ class CastSender extends Object {
         refresh = true;
       }
     } catch (e) {
-      //customPrint(e);
+      //print(e);
     }
 
     // Only update UI if new values
@@ -400,20 +397,20 @@ class CastSender extends Object {
     try {
       _currentAppSessionID = payload["status"]["applications"][0]["sessionId"];
     } catch (e) {
-      //customPrint(e);
+      //print(e);
     }
 
     try {
       iconUrl = payload["status"]["applications"][0]["iconUrl"];
     } catch (e) {
-      //customPrint(e);
+      //print(e);
     }
 
     try {
       _displayAppName = payload["status"]["applications"][0]["displayName"];
-      customPrint(_displayAppName);
+      print(_displayAppName);
     } catch (e) {
-      //customPrint(e);
+      //print(e);
       _displayAppName = null;
     }
 
@@ -462,7 +459,7 @@ class CastSender extends Object {
   void _handleMediaStatus(Map payload) {
     // Todo: only start playing the first time we get a valid media status...
 
-    customPrint('Handle media status: ' + payload.toString());
+    print('Handle media status: ' + payload.toString());
 
     if (null != payload['status']) {
       if (!_castSession.isConnected) {
@@ -472,15 +469,15 @@ class CastSender extends Object {
       if (payload['status'].length > 0) {
         _castSession.castMediaStatus =
             CastMediaStatus.fromChromeCastMediaStatus(payload['status'][0]);
-        customPrint('Media status ${_castSession.castMediaStatus.toString()}');
+        print('Media status ${_castSession.castMediaStatus.toString()}');
         if (_castSession.castMediaStatus.isFinished) {
           _handleContentQueue();
         }
         if (_castSession.castMediaStatus.isPlaying) {
           // Try to get name of song if spotify is playing
-          customPrint(_castSession.castMediaStatus.sessionId);
+          print(_castSession.castMediaStatus.sessionId);
           try {
-            customPrint("xxxxxxx : " + _castSession.castMediaStatus.media.toString());
+            print("xxxxxxx : " + _castSession.castMediaStatus.media.toString());
 
             // TODO check if Youtube can simply use displayAppName
             if (_displayAppName != null) {
@@ -496,9 +493,9 @@ class CastSender extends Object {
               _volumeChangedCallback();
             }
 
-            customPrint(_whatIsPlaying);
+            print(_whatIsPlaying);
           } catch (e) {
-            customPrint("NO TRACK TITLE AVAILABLE");
+            print("NO TRACK TITLE AVAILABLE");
           }
           _mediaCurrentTimeTimer =
               Timer(Duration(seconds: 1), _getMediaCurrentTime);
@@ -510,9 +507,9 @@ class CastSender extends Object {
 
         castMediaStatusController.add(_castSession.castMediaStatus);
       } else {
-        customPrint("Media status is empty");
+        print("Media status is empty");
         if (null == _currentCastMedia && _contentQueue.length > 0) {
-          customPrint(
+          print(
               "no media is currently being casted, try to cast first in queue");
           _handleContentQueue();
         }
