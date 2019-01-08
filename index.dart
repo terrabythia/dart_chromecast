@@ -48,7 +48,7 @@ void startCasting() async {
 
   // instantiate the chromecast sender class
   castSender = CastSender(
-    device
+    device,commandLineMode: true
   );
 
   // listen for cast session updates and save the state when

@@ -26,7 +26,7 @@ abstract class CastChannel {
 
   void customPrint(dynamic theString){
     // Comment this remove all outputs
-     print(theString);
+     //print(theString);
   }
 
   void sendMessage(Map payload) async {
