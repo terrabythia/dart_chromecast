@@ -80,6 +80,9 @@ class CastMessage extends GeneratedMessage {
   set noIdea(int v) { setField(8, v); }
   bool hasNoIdea() => $_has(8);
   void clearNoIdea() => clearField(8);
+
+  @override
+  GeneratedMessage createEmptyInstance() => CastMessage();
 }
 
 class _ReadonlyCastMessage extends CastMessage with ReadonlyMessageMixin {}
@@ -104,6 +107,9 @@ class AuthChallenge extends GeneratedMessage {
   static void $checkItem(AuthChallenge v) {
     if (v is! AuthChallenge) checkItemFailed(v, 'AuthChallenge');
   }
+
+  @override
+  AuthChallenge createEmptyInstance() => AuthChallenge();
 }
 
 class _ReadonlyAuthChallenge extends AuthChallenge with ReadonlyMessageMixin {}
@@ -142,6 +148,9 @@ class AuthResponse extends GeneratedMessage {
   void clearClientAuthCertificate() => clearField(2);
 
   List<List<int>> get clientCa => $_getList(2);
+  
+  @override
+  AuthResponse createEmptyInstance() => AuthResponse();
 }
 
 class _ReadonlyAuthResponse extends AuthResponse with ReadonlyMessageMixin {}
@@ -171,6 +180,9 @@ class AuthError extends GeneratedMessage {
   set errorType(AuthError_ErrorType v) { setField(1, v); }
   bool hasErrorType() => $_has(0);
   void clearErrorType() => clearField(1);
+
+  @override
+  AuthError createEmptyInstance() => AuthError();
 }
 
 class _ReadonlyAuthError extends AuthError with ReadonlyMessageMixin {}
@@ -212,6 +224,9 @@ class DeviceAuthMessage extends GeneratedMessage {
   set error(AuthError v) { setField(3, v); }
   bool hasError() => $_has(2);
   void clearError() => clearField(3);
+
+  @override
+  DeviceAuthMessage createEmptyInstance() => DeviceAuthMessage();
 }
 
 class _ReadonlyDeviceAuthMessage extends DeviceAuthMessage with ReadonlyMessageMixin {}
