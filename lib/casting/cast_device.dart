@@ -48,7 +48,7 @@ class CastDevice extends ChangeNotifier {
 
   void initDeviceInfo() async {
     if (CastDeviceType.ChromeCast == deviceType) {
-      if (null != attr && null != attr['fn']) {
+      if (false && null != attr && null != attr['fn']) {
         _friendlyName = utf8.decode(attr['fn']);
       }
       else {
