@@ -29,7 +29,7 @@ void startCasting() async {
   // try to load previous state saved as json in saved_cast_state.json
   Map savedState;
   try {
-    File savedStateFile = await File('./saved_cast_state.json');
+    File savedStateFile = await File("saved_cast_state.json");
     if (null != savedStateFile) {
       savedState = jsonDecode(await savedStateFile.readAsString());
     }
@@ -48,7 +48,7 @@ void startCasting() async {
 
   // instantiate the chromecast sender class
   castSender = CastSender(
-    device
+    device,commandLineMode: true
   );
 
   // listen for cast session updates and save the state when
@@ -124,6 +124,8 @@ void startCasting() async {
   // s = stop playing
   // left arrow = seek current playback - 10s
   // right arrow = seek current playback + 10s
+
+  stdin.echoMode = false;
   stdin.lineMode = false;
   stdin.listen(_handleUserInput);
 
