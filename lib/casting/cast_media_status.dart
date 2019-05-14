@@ -37,10 +37,6 @@ class CastMediaStatus {
         _position = mediaStatus['currentTime'].toDouble(),
         _media = mediaStatus['media'];
 
-
-  // TODO: implement
-//  CastMediaStatus.fromAppleTvMediaStatus(Map mediaStatus) {}
-
   dynamic get sessionId => _sessionId;
 
   String get nativeStatus => _nativeStatus;

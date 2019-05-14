@@ -17,7 +17,7 @@ void main(List<String> arguments) {
   final parser = new ArgParser()
     ..addOption('host', abbr: 'h', defaultsTo: '192.168.1.214')
     ..addOption('port', abbr: 'p', defaultsTo: '8009')
-    ..addFlag('append', abbr: 'r', defaultsTo: false)
+    ..addFlag('append', abbr: 'a', defaultsTo: false)
     ..addFlag('debug', abbr: 'd', defaultsTo: false);
 
   argResults = parser.parse(arguments);
@@ -25,7 +25,7 @@ void main(List<String> arguments) {
   if (true == argResults['debug'] ) {
     Logger.root.level = Level.ALL;
     Logger.root.onRecord.listen((LogRecord rec) {
-      print('${rec.level.name}: ${rec.time}: ${rec.message}');
+      print('${rec.level.name}: ${rec.message}');
     });
   }
   else {
@@ -38,7 +38,7 @@ void main(List<String> arguments) {
 
 void startCasting() async {
 
-  log.fine('startCasting...');
+  log.fine('Start Casting');
 
   // try to load previous state saved as json in saved_cast_state.json
   Map savedState;
