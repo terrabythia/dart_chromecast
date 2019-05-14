@@ -82,10 +82,20 @@ void startCasting() async {
     }
   });
 
+  CastMediaStatus prevMediaStatus;
   // Listen for media status updates, such as pausing, playing, seeking, playback etc.
   castSender.castMediaStatusController.stream.listen((CastMediaStatus mediaStatus) {
-    // TODO: something?
     // show progress for example
+    if (null != prevMediaStatus && mediaStatus.volume != prevMediaStatus.volume) {
+      // volume just updated
+      log.info('Volume just updated to ${mediaStatus.volume}');
+    }
+    if (null == prevMediaStatus || mediaStatus.position != prevMediaStatus.position) {
+      // update the current progress
+      log.info('Media Position is ${mediaStatus.position}');
+    }
+    prevMediaStatus = mediaStatus;
+
   });
 
   bool connected = false;
@@ -117,10 +127,8 @@ void startCasting() async {
   }
 
   if (!didReconnect) {
-
     // dont relaunch if we just reconnected, because that would reset the player state
     castSender.launch();
-
   }
 
   // turn each rest argument string into a CastMedia instance
@@ -137,7 +145,6 @@ void startCasting() async {
   // s = stop playing
   // left arrow = seek current playback - 10s
   // right arrow = seek current playback + 10s
-
   stdin.echoMode = false;
   stdin.lineMode = false;
   stdin.listen(_handleUserInput);

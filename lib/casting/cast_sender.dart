@@ -1,6 +1,5 @@
 /**
  * TODO:
- * - ability to subscribe to status (volume, seek etc) changes
  * - volume, treble, bass?
  */
 import 'dart:async';
