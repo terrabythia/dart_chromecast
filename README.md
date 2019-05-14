@@ -8,6 +8,8 @@ Simplified port of https://github.com/thibauts/node-castv2-client.
 Originally designed to work in Flutter with the flutter_mdns_plugin https://github.com/terrabythia/flutter_mdns_plugin,
 so this cli project does not include a mdns browser, you should find out what the local ip address and port of your ChromeCast is yourself.
 
+See https://github.com/terrabythia/flutter_chromecast_example for an example implementation in Flutter of both the flutter_mdns_plugin and this repository.
+
 ### options
 **media** space separated list of one or more media source urls
 
