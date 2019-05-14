@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:logging/logging.dart';
 
 import 'package:args/args.dart';
 import 'package:dart_chromecast/casting/cast.dart';
@@ -8,15 +9,28 @@ import 'package:dart_chromecast/casting/cast.dart';
 ArgResults argResults;
 CastSender castSender;
 
+final Logger log = new Logger('Chromecast CLI');
+
 void main(List<String> arguments) {
 
   // Create an argument parser so we can read the cli's arguments and options
   final parser = new ArgParser()
     ..addOption('host', abbr: 'h', defaultsTo: '192.168.1.214')
     ..addOption('port', abbr: 'p', defaultsTo: '8009')
-    ..addFlag('append', abbr: 'r', defaultsTo: false);
+    ..addFlag('append', abbr: 'r', defaultsTo: false)
+    ..addFlag('debug', abbr: 'd', defaultsTo: false);
 
   argResults = parser.parse(arguments);
+
+  if (true == argResults['debug'] ) {
+    Logger.root.level = Level.ALL;
+    Logger.root.onRecord.listen((LogRecord rec) {
+      print('${rec.level.name}: ${rec.time}: ${rec.message}');
+    });
+  }
+  else {
+    Logger.root.level = Level.OFF;
+  }
 
   startCasting();
 
@@ -24,19 +38,19 @@ void main(List<String> arguments) {
 
 void startCasting() async {
 
-  print('startCasting...');
+  log.fine('startCasting...');
 
   // try to load previous state saved as json in saved_cast_state.json
   Map savedState;
   try {
-    File savedStateFile = await File('./saved_cast_state.json');
+    File savedStateFile = await File("./saved_cast_state.json");
     if (null != savedStateFile) {
       savedState = jsonDecode(await savedStateFile.readAsString());
     }
   }
   catch(e) {
     // does not exist yet
-    print('error fetching saved state' + e.toString());
+    log.warning('error fetching saved state' + e.toString());
   }
 
   // create the chromecast device with the passed in host and port
@@ -48,14 +62,14 @@ void startCasting() async {
 
   // instantiate the chromecast sender class
   castSender = CastSender(
-    device
+    device,
   );
 
   // listen for cast session updates and save the state when
   // the device is connected
   castSender.castSessionController.stream.listen((CastSession castSession) async {
     if (castSession.isConnected) {
-      File savedStateFile = await File('saved_cast_state.json');
+      File savedStateFile = await File('./saved_cast_state.json');
       Map map = {
         'time': DateTime.now().millisecondsSinceEpoch,
       }..addAll(
@@ -64,7 +78,7 @@ void startCasting() async {
       await savedStateFile.writeAsString(
           jsonEncode(map)
       );
-      print('Cast session was saved.');
+      log.fine('Cast session was saved to saved_cat_state.json.');
     }
   });
 
@@ -77,20 +91,19 @@ void startCasting() async {
   bool connected = false;
   bool didReconnect = false;
 
-  print(savedState.toString());
   if (null != savedState) {
     // If we have a saved state,
     // try to reconnect
     connected = await castSender.reconnect(
-        sourceId: savedState['sourceId'],
-        destinationId: savedState['destinationId'],
+      sourceId: savedState['sourceId'],
+      destinationId: savedState['destinationId'],
     );
     if (connected) {
       didReconnect = true;
     }
   }
 
-  print('connected? ${connected.toString()}');
+  log.fine('connected? ${connected.toString()}');
 
   // if reconnection failed or we never had a saved state to begin with
   // connect to a fresh session.
@@ -99,7 +112,7 @@ void startCasting() async {
   }
 
   if (!connected) {
-    print('COUlD NOT CONNECT!');
+    log.warning('COUlD NOT CONNECT!');
     return;
   }
 
@@ -115,8 +128,8 @@ void startCasting() async {
 
   // load CastMedia playlist and send it to the chromecast
   castSender.loadPlaylist(
-    media,
-    append: argResults['append']
+      media,
+      append: argResults['append']
   );
 
   // Initiate key press handler
@@ -124,6 +137,8 @@ void startCasting() async {
   // s = stop playing
   // left arrow = seek current playback - 10s
   // right arrow = seek current playback + 10s
+
+  stdin.echoMode = false;
   stdin.lineMode = false;
   stdin.listen(_handleUserInput);
 
@@ -135,7 +150,7 @@ void _handleUserInput(List<int> data) {
 
   int keyCode = data.last;
 
-  print("Key pressed: $keyCode");
+  log.info("Key pressed: $keyCode");
 
   if (32 == keyCode) {
     // space = toggle pause
@@ -154,7 +169,7 @@ void _handleUserInput(List<int> data) {
     double seekBy = 67 == keyCode ? 10.0 : -10.0;
     if (null != castSender.castSession && null != castSender.castSession.castMediaStatus) {
       castSender.seek(
-          max(0.0, castSender.castSession.castMediaStatus.position + seekBy),
+        max(0.0, castSender.castSession.castMediaStatus.position + seekBy),
       );
     }
 

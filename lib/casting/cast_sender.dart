@@ -1,3 +1,8 @@
+/**
+ * TODO:
+ * - ability to subscribe to status (volume, seek etc) changes
+ * - volume, treble, bass?
+ */
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -11,9 +16,11 @@ import 'package:dart_chromecast/casting/heartbeat_channel.dart';
 import 'package:dart_chromecast/casting/media_channel.dart';
 import 'package:dart_chromecast/casting/receiver_channel.dart';
 import 'package:dart_chromecast/proto/cast_channel.pb.dart';
+import 'package:logging/logging.dart';
 
 class CastSender extends Object {
 
+  final Logger log = new Logger('CastSender');
   final CastDevice device;
 
   SecureSocket _socket;
@@ -26,6 +33,7 @@ class CastSender extends Object {
   bool connectionDidClose;
 
   Timer _heartbeatTimer;
+  Timer _receiverStatusTimer;
   Timer _mediaCurrentTimeTimer;
 
   CastSession _castSession;
@@ -56,6 +64,7 @@ class CastSender extends Object {
 
     // connect to socket
     if (null == await _createSocket()) {
+      log.severe('Could not create socket');
       return false;
     }
 
@@ -65,6 +74,10 @@ class CastSender extends Object {
 
     // start heartbeat
     _heartbeatTick();
+
+    // start status tick
+    // TODO: only start receiver status tick when there are subscriptions to it
+//    _receiverStatusTick();
 
     return true;
 
@@ -86,7 +99,7 @@ class CastSender extends Object {
     // now wait for the media to actually get a status?
     bool didReconnect = await _waitForMediaStatus();
     if (didReconnect) {
-      print('reconnecting successful!');
+      log.fine('reconnecting successful!');
       castSessionController.add(
           _castSession
       );
@@ -149,20 +162,19 @@ class CastSender extends Object {
 
   void play() {
     _castMediaAction('PLAY');
+    log.info('PLAY');
   }
 
   void pause() {
     _castMediaAction('PAUSE');
+    log.info('PAUSE');
   }
 
   void togglePause() {
-    print(_castSession.toString());
     if (true == _castSession?.castMediaStatus?.isPlaying) {
-      print('PAUSE');
       pause();
     }
     else if (true == _castSession?.castMediaStatus?.isPaused){
-      print('PLAY');
       play();
     }
   }
@@ -189,7 +201,7 @@ class CastSender extends Object {
     if (null == _socket) {
       try {
 
-        print('Connecting to ${device.host}:${device.port}');
+        log.fine('Connecting to ${device.host}:${device.port}');
 
         _socket = await SecureSocket.connect(
             device.host,
@@ -208,7 +220,7 @@ class CastSender extends Object {
 
       }
       catch(e) {
-        print(e.toString());
+        log.fine(e.toString());
         return null;
       }
     }
@@ -223,7 +235,7 @@ class CastSender extends Object {
       // handle the message
       if (null != message.payloadUtf8) {
         Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
-        print(payloadMap['type']);
+        log.fine(payloadMap['type']);
         if ('CLOSE' == payloadMap['type']) {
           _dispose();
           connectionDidClose = true;
@@ -239,7 +251,7 @@ class CastSender extends Object {
   }
 
   void _handleReceiverStatus(Map payload) {
-    print(payload.toString());
+    log.fine(payload.toString());
     if (null == _mediaChannel && true == payload['status']?.containsKey('applications')) {
       // re-create the channel with the transportId the chromecast just sent us
       if (!_castSession.isConnected) {
@@ -268,23 +280,28 @@ class CastSender extends Object {
   }
 
   void _handleMediaStatus(Map payload) {
-    // Todo: only start playing the first time we get a valid media status...
 
-    print('Handle media status: ' +  payload.toString());
+    log.fine('Handle media status: ' +  payload.toString());
 
     if (null != payload['status']) {
+
       if (!_castSession.isConnected) {
         _castSession.isConnected = true;
         _handleContentQueue();
       }
+
       if (payload['status'].length > 0) {
+
         _castSession.castMediaStatus = CastMediaStatus.fromChromeCastMediaStatus(
             payload['status'][0]
         );
-        print('Media status ${_castSession.castMediaStatus.toString()}');
+
+        log.fine('Media status ${_castSession.castMediaStatus.toString()}');
+
         if (_castSession.castMediaStatus.isFinished) {
           _handleContentQueue();
         }
+
         if (_castSession.castMediaStatus.isPlaying) {
           _mediaCurrentTimeTimer = Timer(Duration(seconds: 1), _getMediaCurrentTime);
         }
@@ -299,9 +316,11 @@ class CastSender extends Object {
 
       }
       else {
-        print("Media status is empty");
+
+        log.fine("Media status is empty");
+
         if (null == _currentCastMedia && _contentQueue.length > 0) {
-          print("no media is currently being casted, try to cast first in queue");
+          log.fine("no media is currently being casted, try to cast first in queue");
           _handleContentQueue();
         }
       }
@@ -347,6 +366,18 @@ class CastSender extends Object {
       });
 
       _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
+    }
+
+  }
+
+  void _receiverStatusTick() {
+
+    if (null != _receiverChannel) {
+      _receiverChannel.sendMessage({
+        'type': 'GET_STATUS',
+      });
+
+      _receiverStatusTimer = Timer(Duration(seconds: 5), _receiverStatusTick);
     }
 
   }

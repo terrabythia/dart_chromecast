@@ -1,5 +1,3 @@
-
-
 class CastMedia {
 
   final String contentId;

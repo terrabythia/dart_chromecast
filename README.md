@@ -16,7 +16,8 @@ so this cli project does not include a mdns browser, you should find out what th
 **port** (optional) port of the ChromeCast device. Defaults to `8009`.
 
 ### flags
-**--append** whether to append the passed in media to the current playlist and not replace the current playlist (if reconnecting was successful). Defaults to `false`.  
+**--append** (-a) whether to append the passed in media to the current playlist and not replace the current playlist (if reconnecting was successful). Defaults to `false`.  
+**--debug** (-d) whether to show all info logs, defaults to `false`
 
 ### usage
 `dart index.dart <media> --host <host> --port <port> [--append]` 
