@@ -55,7 +55,7 @@ class CastDevice extends ChangeNotifier {
     this.type,
     this.host,
     this.port,
-    this.attr = null,
+    this.attr,
   }) {
     initDeviceInfo();
   }

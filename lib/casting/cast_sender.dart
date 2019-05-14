@@ -31,8 +31,7 @@ class CastSender extends Object {
 
   bool connectionDidClose;
 
-  Timer _heartbeatTimer;
-  Timer _receiverStatusTimer;
+//  Timer _heartbeatTimer;
   Timer _mediaCurrentTimeTimer;
 
   CastSession _castSession;
@@ -137,7 +136,7 @@ class CastSender extends Object {
     loadPlaylist([media], forceNext: forceNext);
   }
 
-  void loadPlaylist(List<CastMedia> media, {append: false, forceNext = false}) {
+  void loadPlaylist(List<CastMedia> media, { append = false, forceNext = false }) {
     if (!append) {
       _contentQueue = media;
     }
@@ -318,7 +317,7 @@ class CastSender extends Object {
 
         log.fine("Media status is empty");
 
-        if (null == _currentCastMedia && _contentQueue.length > 0) {
+        if (null == _currentCastMedia && _contentQueue.isNotEmpty) {
           log.fine("no media is currently being casted, try to cast first in queue");
           _handleContentQueue();
         }
@@ -328,7 +327,7 @@ class CastSender extends Object {
   }
 
   _handleContentQueue({forceNext = false}) {
-    if (null == _mediaChannel || _contentQueue.length == 0) {
+    if (null == _mediaChannel || _contentQueue.isEmpty) {
       return;
     }
     if (null != _castSession.castMediaStatus &&
@@ -364,19 +363,9 @@ class CastSender extends Object {
         'type': 'PING'
       });
 
-      _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
-    }
+//      _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
+      Timer(Duration(seconds: 5), _heartbeatTick);
 
-  }
-
-  void _receiverStatusTick() {
-
-    if (null != _receiverChannel) {
-      _receiverChannel.sendMessage({
-        'type': 'GET_STATUS',
-      });
-
-      _receiverStatusTimer = Timer(Duration(seconds: 5), _receiverStatusTick);
     }
 
   }
