@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
-import 'package:xml/xml.dart' as xml;
 import 'package:http/http.dart' as http;
 import 'package:observable/observable.dart';
 
@@ -45,20 +44,20 @@ class CastDevice extends ChangeNotifier {
 
   /// Name given to your device when you set it up
   /// ex: Kitchen Speaker
-  String friendlyName;
+  String _friendlyName;
 
   /// Model name given by manufacturer
   /// It is the device (Google Home), NOT the codename (ie: Pepperoni)
-  String modelName;
+  String _modelName;
 
   /// Model of device
   /// Used for sorting, enum of type [CastModel]
-  CastModel castModel;
+  CastModel _castModel;
 
-  CastDevice({this.name, this.type, this.host, this.port, this.attr}) {
+  CastDevice({ this.name, this.type, this.host, this.port, this.attr = null }) {
     if (attr != null) {
-      modelName = utf8.decode(attr['md']);
-      friendlyName = utf8.decode(attr['fn']);
+      _modelName = utf8.decode(attr['md']);
+      _friendlyName = utf8.decode(attr['fn']);
 
       defineModelName();
       notifyChange();
@@ -67,31 +66,39 @@ class CastDevice extends ChangeNotifier {
     }
   }
 
+  String get modelName => _modelName;
+  String get friendlyName => _friendlyName;
+  CastModel get castModel => _castModel;
+
+  void set debugFunc(Function debugFunc) {
+
+  }
+
   void defineModelName() {
     switch (modelName) {
       case "Google Home":
-        castModel = CastModel.GoogleHome;
+        _castModel = CastModel.GoogleHome;
         break;
       case "Google Home Hub":
-        castModel = CastModel.GoogleHub;
+        _castModel = CastModel.GoogleHub;
         break;
       case "Google Home Mini":
-        castModel = CastModel.GoogleMini;
+        _castModel = CastModel.GoogleMini;
         break;
       case "Google Home Max":
-        castModel = CastModel.GoogleMax;
+        _castModel = CastModel.GoogleMax;
         break;
       case "Chromecast":
-        castModel = CastModel.ChromeCast;
+        _castModel = CastModel.ChromeCast;
         break;
       case "Chromecast Audio":
-        castModel = CastModel.ChromeCastAudio;
+        _castModel = CastModel.ChromeCastAudio;
         break;
       case "Google Cast Group":
-        castModel = CastModel.CastGroup;
+        _castModel = CastModel.CastGroup;
         break;
       default:
-        castModel = CastModel.NonGoogle;
+        _castModel = CastModel.NonGoogle;
         break;
     }
   }
@@ -103,10 +110,11 @@ class CastDevice extends ChangeNotifier {
       http.Response response = await http
           .get('http://${host}:8008/setup/eureka_info?params=name,device_info');
       Map deviceInfo = jsonDecode(response.body);
-      friendlyName = deviceInfo['name'];
+      _friendlyName = deviceInfo['name'];
     } catch (exception) {
-      friendlyName = 'Unknown';
+      _friendlyName = 'Unknown';
     }
+    notifyChange();
 
   }
 
@@ -122,10 +130,10 @@ class CastDevice extends ChangeNotifier {
   /// Comparator
   /// For the order, look at how the enum [CastModel] is instanciated
   int compareTo(CastDevice b) {
-    if (this.castModel == b.castModel) {
+    if (_castModel == b.castModel) {
       return this.host.compareTo(b.host);
     } else {
-      return this.castModel.index.compareTo(b.castModel.index);
+      return _castModel.index.compareTo(b.castModel.index);
     }
   }
 }

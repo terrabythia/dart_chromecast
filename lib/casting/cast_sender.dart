@@ -11,12 +11,13 @@ import 'package:dart_chromecast/casting/heartbeat_channel.dart';
 import 'package:dart_chromecast/casting/media_channel.dart';
 import 'package:dart_chromecast/casting/receiver_channel.dart';
 import 'package:dart_chromecast/proto/cast_channel.pb.dart';
+import 'package:logging/logging.dart';
+
+final Logger log = new Logger('CastSender');
 
 typedef void VoidCallback();
 
 class CastSender extends Object {
-
-  bool _commandLineMode = false;
 
   final CastDevice device;
 
@@ -65,15 +66,6 @@ class CastSender extends Object {
   /// Will be null if there are no icons, so check before using
   String iconUrl;
 
-  /// OVERRIDE FOR PRINT
-  ///
-  /// This is there so customPrint() is disabled in release versions. NOT FOR USE.
-  //void customPrint(dynamic theString) {}
-  void customPrint(dynamic theString){
-    // Comment this remove all outputs
-    //print(theString);
-  }
-
   /// The callback you set is called everytime:
   ///
   /// * the volume (or bass/treble) is changed
@@ -86,11 +78,7 @@ class CastSender extends Object {
     _volumeChangedCallback = volumeChangedCallBack;
   }
 
-  /// When creating the [CastSender] setting the [commandLineMode] to [true]
-  /// is important if the point is to cast media from the command line.
-  /// Otherwise, set to [false] to get device updates on the receiver channel.
-  CastSender(this.device, {bool commandLineMode=false}) {
-    _commandLineMode = commandLineMode;
+  CastSender(this.device) {
     // TODO: _airplay._tcp
     _contentQueue = [];
     castSessionController = StreamController.broadcast();
@@ -136,7 +124,7 @@ class CastSender extends Object {
     // now wait for the media to actually get a status?
     bool didReconnect = await _waitForMediaStatus();
     if (didReconnect) {
-      customPrint('reconnecting successful!');
+      log.fine('reconnecting successful!');
       castSessionController.add(_castSession);
       castMediaStatusController.add(_castSession.castMediaStatus);
     }
@@ -217,12 +205,12 @@ class CastSender extends Object {
 
   /// PLAY/PAUSE feature, uses [play()] and [pause()]
   void togglePause() {
-    customPrint(_castSession.toString());
+    log.fine(_castSession.toString());
     if (true == _castSession?.castMediaStatus?.isPlaying) {
-      customPrint('PAUSE');
+      log.fine('PAUSE');
       pause();
     } else if (true == _castSession?.castMediaStatus?.isPaused) {
-      customPrint('PLAY');
+      log.fine('PLAY');
       play();
     }
   }
@@ -254,7 +242,7 @@ class CastSender extends Object {
   Future<SecureSocket> _createSocket() async {
     if (null == _socket) {
       try {
-        customPrint('Connecting to ${device.host}:${device.port}');
+        log.fine('Connecting to ${device.host}:${device.port}');
 
         _socket = await SecureSocket.connect(device.host, device.port,
             onBadCertificate: (X509Certificate certificate) => true,
@@ -272,7 +260,7 @@ class CastSender extends Object {
 
         _socket.listen(_onSocketData, onDone: _dispose);
       } catch (e) {
-        customPrint(e.toString());
+        log.fine(e.toString());
         return null;
       }
     }
@@ -287,11 +275,11 @@ class CastSender extends Object {
       // handle the message
       if (null != message.payloadUtf8) {
         Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
-        customPrint(payloadMap['type']);
+        log.fine(payloadMap['type']);
         if ('CLOSE' == payloadMap['type']) {
           _dispose();
           connectionDidClose = true;
-          if (_volumeChangedCallback!=null) {
+          if (_volumeChangedCallback != null) {
             _volumeChangedCallback();
           }
         }
@@ -306,7 +294,7 @@ class CastSender extends Object {
 
   /// Sending the GET_STATUS message over the RECEIVER channel will get use much
   /// information including the current volume
-  void getVolumeRequest() {
+  void getReceiverStatusRequest() {
     if (null != _receiverChannel) {
       _receiverChannel.sendMessage({
         'type': 'GET_STATUS',
@@ -318,9 +306,9 @@ class CastSender extends Object {
   /// will kill the app (ie: Spotify, Youtube, etc.) currently playing. Resume
   /// will thus not work afterwards.
   void killAppRunning() {
-    customPrint(
+    log.info(
         "----------------------------------------------------------TRYING TO KILL:");
-    customPrint(_currentAppSessionID);
+    log.info(_currentAppSessionID);
 
     if (null != _receiverChannel && _currentAppSessionID != null) {
       _receiverChannel
@@ -331,7 +319,7 @@ class CastSender extends Object {
   /// This returns the current volume, but the volume value is constantly
   /// updated when that value changes on the device. The [_volumeChangedCallback]
   /// is called when that value changes.
-  double getCurrentVolume() {
+  double get currentVolume {
     return _currentVolume;
   }
 
@@ -340,7 +328,7 @@ class CastSender extends Object {
   /// is called when that value changes.
   ///
   /// CAN BE NULL if device has no Bass control
-  int getCurrentBass() {
+  int get currentBass {
     return _currentBassGain;
   }
 
@@ -349,7 +337,7 @@ class CastSender extends Object {
   /// is called when that value changes.
   ///
   /// CAN BE NULL if device has no treble control
-  int getCurrentTrebl() {
+  int get currentTreble {
     return _currentTrebleGain;
   }
 
@@ -357,17 +345,16 @@ class CastSender extends Object {
   /// depending on the app
   ///
   /// NULL if nothing is playing
-  String getCurrentPlaying() {
+  String get currentPlaying {
     if (null != _mediaChannel && null != _castSession?.castMediaStatus) {
     } else {
       _whatIsPlaying = null;
     }
-
     return _whatIsPlaying;
   }
 
   void _handleReceiverStatus(Map payload) {
-    customPrint(payload.toString());
+    log.fine(payload.toString());
 
     bool refresh = false;
 
@@ -385,7 +372,7 @@ class CastSender extends Object {
         }
       }
     } catch (e) {
-      //customPrint(e);
+      //log.fine(e);
     }
 
     try {
@@ -395,33 +382,26 @@ class CastSender extends Object {
         refresh = true;
       }
     } catch (e) {
-      //customPrint(e);
-    }
-
-    // Only update UI if new values
-    if (refresh) {
-      if (_volumeChangedCallback != null) {
-        _volumeChangedCallback();
-      }
+      //log.fine(e);
     }
 
     try {
       _currentAppSessionID = payload["status"]["applications"][0]["sessionId"];
     } catch (e) {
-      //customPrint(e);
+      //log.fine(e);
     }
 
     try {
       iconUrl = payload["status"]["applications"][0]["iconUrl"];
     } catch (e) {
-      //customPrint(e);
+      //log.fine(e);
     }
 
     try {
       _displayAppName = payload["status"]["applications"][0]["displayName"];
-      customPrint(_displayAppName);
+      log.fine(_displayAppName);
     } catch (e) {
-      //customPrint(e);
+      //log.fine(e);
       _displayAppName = null;
     }
 
@@ -456,9 +436,8 @@ class CastSender extends Object {
 
 
   void _handleMediaStatus(Map payload) {
-    // Todo: only start playing the first time we get a valid media status...
 
-    customPrint('Handle media status: ' + payload.toString());
+    log.fine('Handle media status: ' + payload.toString());
 
     if (null != payload['status']) {
       if (!_castSession.isConnected) {
@@ -468,16 +447,14 @@ class CastSender extends Object {
       if (payload['status'].length > 0) {
         _castSession.castMediaStatus =
             CastMediaStatus.fromChromeCastMediaStatus(payload['status'][0]);
-        customPrint('Media status ${_castSession.castMediaStatus.toString()}');
+        log.fine('Media status ${_castSession.castMediaStatus.toString()}');
         if (_castSession.castMediaStatus.isFinished) {
           _handleContentQueue();
         }
         if (_castSession.castMediaStatus.isPlaying) {
           // Try to get name of song if spotify is playing
-          customPrint(_castSession.castMediaStatus.sessionId);
+          log.fine(_castSession.castMediaStatus.sessionId);
           try {
-            customPrint("xxxxxxx : " + _castSession.castMediaStatus.media.toString());
-
             // TODO check if Youtube can simply use displayAppName
             if (_displayAppName != null) {
               contentProvider = _displayAppName;
@@ -486,15 +463,14 @@ class CastSender extends Object {
             }
 
             var newPlaying =
-            _castSession.castMediaStatus.media['metadata']['title'];
+              _castSession.castMediaStatus.media['metadata']['title'];
             if (newPlaying != _whatIsPlaying) {
               _whatIsPlaying = newPlaying;
-              _volumeChangedCallback();
             }
 
-            customPrint(_whatIsPlaying);
+            log.fine(_whatIsPlaying);
           } catch (e) {
-            customPrint("NO TRACK TITLE AVAILABLE");
+            log.fine("NO TRACK TITLE AVAILABLE");
           }
           _mediaCurrentTimeTimer =
               Timer(Duration(seconds: 1), _getMediaCurrentTime);
@@ -506,9 +482,9 @@ class CastSender extends Object {
 
         castMediaStatusController.add(_castSession.castMediaStatus);
       } else {
-        customPrint("Media status is empty");
+        log.fine("Media status is empty");
         if (null == _currentCastMedia && _contentQueue.length > 0) {
-          customPrint(
+          log.fine(
               "no media is currently being casted, try to cast first in queue");
           _handleContentQueue();
         }
@@ -548,13 +524,12 @@ class CastSender extends Object {
       _heartbeatChannel.sendMessage({'type': 'PING'});
 
       // Update volumes with heartbeat
-
-      if(!_commandLineMode) {
-        getVolumeRequest();
-      }
-
+//      if(!_commandLineMode) {
+//        getReceiverStatusRequest();
+//      }
 
       _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
+
     }
   }
 
@@ -567,4 +542,5 @@ class CastSender extends Object {
     _castSession = null;
     _contentQueue = [];
   }
+
 }
