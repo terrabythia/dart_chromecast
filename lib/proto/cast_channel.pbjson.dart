@@ -1,8 +1,8 @@
 ///
 //  Generated code. Do not modify.
+//  source: proto/cast_channel.proto
 ///
-// ignore_for_file: non_constant_identifier_names,library_prefixes
-library extensions.api.cast_channel_cast_channel_pbjson;
+// ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name
 
 const CastMessage$json = const {
   '1': 'CastMessage',

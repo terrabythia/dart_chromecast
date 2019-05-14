@@ -51,7 +51,12 @@ The supported model names (enum of type `CastModel`) are:
 
 `CastDevice` also has a comparator now, so you can sort a list of `CastDevice`. The order list is:
 
-
 1. Google Home, Google Mini, Google Max, Google Hub
 2. Chromecast, Chromecast Audio
 3. Casting Groups, Non-Google devices (ie: Sonos, etc.)
+
+### reconnecting to active session
+When you exit the command line without disconnecting the device, the video will keep playing. 
+To reconnect without messing with the current playlist, just run the command without any media urls. Eg:
+
+`dart index.dart --host=192.168.1.1 `

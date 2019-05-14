@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
-
-import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
+import 'package:http/http.dart' as http;
 import 'package:observable/observable.dart';
 
 /// Only Chromecast Type is supported
@@ -108,6 +107,7 @@ class CastDevice extends ChangeNotifier {
     } catch (exception) {
       friendlyName = 'Unknown';
     }
+
   }
 
   CastDeviceType get deviceType {
