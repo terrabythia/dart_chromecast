@@ -22,13 +22,7 @@ abstract class CastChannel {
       _sourceId = sourceId,
       _destinationId = destinationId,
       _namespace = namespace;
-
-
-  void customPrint(dynamic theString){
-    // Comment this remove all outputs
-     //print(theString);
-  }
-
+  
   void sendMessage(Map payload) async {
 
     payload['requestId'] = _requestId;
@@ -47,13 +41,13 @@ abstract class CastChannel {
 
     if ('PING' != payload['type']) {
 
-      customPrint('Send: ${castMessage.toDebugString()}');
-      customPrint('List: ${fullData.toList().toString()}');
+      print('Send: ${castMessage.toDebugString()}');
+      print('List: ${fullData.toList().toString()}');
 
     }
     else {
 
-      customPrint('PING');
+      print('PING');
 
     }
 
