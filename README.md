@@ -1,7 +1,7 @@
 # dart_chromecast
 Dart package to play videos to a chromecast device
 
-**This package is currently under development and not ready for real use! The API will most likely change completely. Also no guarantees of this project working at all until it has its first stable release.**
+**This package is currently under development and the API can change completely at some point. Use at your own risk.**
 
 Simplified port of https://github.com/thibauts/node-castv2-client.
 
