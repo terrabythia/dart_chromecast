@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:logging/logging.dart';
+import 'package:dart_chromecast/proto/cast_channel.pb.dart';
 import 'package:dart_chromecast/casting/cast_device.dart';
 import 'package:dart_chromecast/casting/cast_media.dart';
 import 'package:dart_chromecast/casting/cast_media_status.dart';
@@ -14,8 +16,7 @@ import 'package:dart_chromecast/casting/connection_channel.dart';
 import 'package:dart_chromecast/casting/heartbeat_channel.dart';
 import 'package:dart_chromecast/casting/media_channel.dart';
 import 'package:dart_chromecast/casting/receiver_channel.dart';
-import 'package:dart_chromecast/proto/cast_channel.pb.dart';
-import 'package:logging/logging.dart';
+import 'package:dart_chromecast/casting/interfaces/log_interface.dart';
 
 class CastSender extends Object {
 
@@ -169,6 +170,8 @@ class CastSender extends Object {
   }
 
   void togglePause() {
+    log.info("TOGGLE_PAUSE");
+    log.info(_castSession?.castMediaStatus.toString());
     if (true == _castSession?.castMediaStatus?.isPlaying) {
       pause();
     }
@@ -252,7 +255,7 @@ class CastSender extends Object {
     log.fine(payload.toString());
     if (null == _mediaChannel && true == payload['status']?.containsKey('applications')) {
       // re-create the channel with the transportId the chromecast just sent us
-      if (!_castSession.isConnected) {
+      if (false == _castSession?.isConnected) {
         _castSession = _castSession..mergeWithChromeCastSessionMap(payload['status']['applications'][0]);
         _connectionChannel = ConnectionChannel.create(_socket, sourceId: _castSession.sourceId, destinationId: _castSession.destinationId);
         _connectionChannel.sendMessage({
@@ -378,6 +381,18 @@ class CastSender extends Object {
     _mediaChannel = null;
     _castSession = null;
     _contentQueue = [];
+  }
+
+  @override
+  logError(String message, [Error error]) {
+    // TODO: implement logError
+    return null;
+  }
+
+  @override
+  logInfo(String message) {
+    // TODO: implement logInfo
+    return null;
   }
 
 }

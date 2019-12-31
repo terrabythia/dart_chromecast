@@ -1,14 +1,15 @@
 name: dart_chromecast
-version: 0.1.0
+version: 0.1.1
 description: Cast videos to your ChromeCast device
 author: Sander Bruggeman <sanderbruggeman@gmail.com>
 homepage: https://github.com/terrabythia/dart_chromecast
 
 environment:
-  sdk: '>=2.0.0 <3.0.0'
+  sdk: '>=2.2.0 <3.0.0'
 
 dependencies:
-  protobuf: ^0.13.11
+  protobuf: '>=1.0.1 <2.0.0'
+  protoc_plugin: any
   http: ^0.12.0+2
   cli_util: ^0.1.3+2
   args: ^1.4.0

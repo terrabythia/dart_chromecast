@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -5,9 +6,6 @@ import 'package:logging/logging.dart';
 
 import 'package:args/args.dart';
 import 'package:dart_chromecast/casting/cast.dart';
-
-ArgResults argResults;
-CastSender castSender;
 
 final Logger log = new Logger('Chromecast CLI');
 
@@ -20,7 +18,7 @@ void main(List<String> arguments) {
     ..addFlag('append', abbr: 'a', defaultsTo: false)
     ..addFlag('debug', abbr: 'd', defaultsTo: false);
 
-  argResults = parser.parse(arguments);
+  final ArgResults argResults = parser.parse(arguments);
 
   if (true == argResults['debug'] ) {
     Logger.root.level = Level.ALL;
@@ -32,13 +30,25 @@ void main(List<String> arguments) {
     Logger.root.level = Level.OFF;
   }
 
-  startCasting();
+  // turn each rest argument string into a CastMedia instance
+  final List<CastMedia> media = argResults.rest.map((String i) => CastMedia(contentId:  i)).toList();
+
+  startCasting(media, argResults['host'], int.parse(argResults['port']), argResults['append']);
 
 }
 
-void startCasting() async {
+void startCasting(List<CastMedia> media, String host, int port, bool append) async {
 
   log.fine('Start Casting');
+
+  Function logCallback = (Object error, String logMessage) {
+    if (null != error) {
+      log.info(logMessage);
+    }
+    else {
+      log.warning(logMessage, error);
+    }
+  };
 
   // try to load previous state saved as json in saved_cast_state.json
   Map savedState;
@@ -54,16 +64,20 @@ void startCasting() async {
   }
 
   // create the chromecast device with the passed in host and port
-  CastDevice device = CastDevice(
-    host: argResults['host'],
-    port: int.parse(argResults['port']),
+  final CastDevice device = CastDevice(
+    host: host,
+    port: port,
     type: '_googlecast._tcp',
   );
 
   // instantiate the chromecast sender class
-  castSender = CastSender(
+  final CastSender castSender = CastSender(
     device,
   );
+
+  if (Level.OFF != Logger.root.level) {
+//    castSender.setLogCallback(logCallback);
+  }
 
   // listen for cast session updates and save the state when
   // the device is connected
@@ -90,9 +104,9 @@ void startCasting() async {
       // volume just updated
       log.info('Volume just updated to ${mediaStatus.volume}');
     }
-    if (null == prevMediaStatus || mediaStatus.position != prevMediaStatus.position) {
+    if (null == prevMediaStatus || mediaStatus?.position != prevMediaStatus?.position) {
       // update the current progress
-      log.info('Media Position is ${mediaStatus.position}');
+      log.info('Media Position is ${mediaStatus?.position}');
     }
     prevMediaStatus = mediaStatus;
 
@@ -131,13 +145,10 @@ void startCasting() async {
     castSender.launch();
   }
 
-  // turn each rest argument string into a CastMedia instance
-  List<CastMedia> media = argResults.rest.map((String i) => CastMedia(contentId:  i)).toList();
-
   // load CastMedia playlist and send it to the chromecast
   castSender.loadPlaylist(
       media,
-      append: argResults['append']
+      append: append
   );
 
   // Initiate key press handler
@@ -147,17 +158,19 @@ void startCasting() async {
   // right arrow = seek current playback + 10s
   stdin.echoMode = false;
   stdin.lineMode = false;
-  stdin.listen(_handleUserInput);
+
+  stdin.asBroadcastStream().listen((List<int> data) {
+      _handleUserInput(castSender, data);
+  });
+//  stdin.asBroadcastStream().listen(_handleUserInput);
 
 }
 
-void _handleUserInput(List<int> data) {
+void _handleUserInput(CastSender castSender, List<int> data) {
 
   if (null == castSender || data.length == 0) return;
 
   int keyCode = data.last;
-
-  log.info("Key pressed: $keyCode");
 
   if (32 == keyCode) {
     // space = toggle pause
