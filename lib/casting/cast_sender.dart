@@ -374,6 +374,8 @@ class CastSender extends Object {
   }
 
   void _dispose() {
+     castSessionController.close();
+     castMediaStatusController.close();
     _socket = null;
     _heartbeatChannel = null;
     _connectionChannel = null;
