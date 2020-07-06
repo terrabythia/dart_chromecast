@@ -1,5 +1,4 @@
 class CastMedia {
-
   final String contentId;
   String title;
   bool autoPlay = true;
@@ -29,11 +28,14 @@ class CastMedia {
       'media': {
         'contentId': contentId,
         'contentType': contentType,
-        'images': images,
-        'title': title,
         'streamType': 'BUFFERED',
+        'metadata': {
+          'type': 0,
+          'metadataType': 0,
+          'title': title,
+          'images': images.map((e) => {'url': e}).toList()
+        },
       }
     };
   }
-
 }
