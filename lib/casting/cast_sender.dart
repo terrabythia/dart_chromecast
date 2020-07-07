@@ -189,9 +189,11 @@ class CastSender extends Object {
     _castMediaAction('SEEK', map);
   }
 
-  void setVolume(double volume) {
-    Map<String, dynamic> map = { 'volume': min(volume, 1)};
-    _castMediaAction('VOLUME', map);
+ void setVolume(double volume) {
+    Map<String, dynamic> map = {
+      'volume': {"level": min(volume, 1)}
+    };
+    _castMediaAction('SET_VOLUME', map);
   }
 
   CastSession get castSession => _castSession;
