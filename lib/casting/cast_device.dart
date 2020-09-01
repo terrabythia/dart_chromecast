@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:convert' show utf8;
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 import 'package:logging/logging.dart';
 import 'package:observable/observable.dart';
 
@@ -69,9 +71,16 @@ class CastDevice extends ChangeNotifier {
         // Attributes are not guaranteed to be set, if not set fetch them via the eureka_info url
         // Possible parameters: version,audio,name,build_info,detail,device_info,net,wifi,setup,settings,opt_in,opencast,multizone,proxy,night_mode_params,user_eq,room_equalizer
         try {
-          http.Response response = await http.get(
-              'http://${host}:8008/setup/eureka_info?params=name,device_info');
+          bool trustSelfSigned = true;
+          HttpClient httpClient = new HttpClient()
+            ..badCertificateCallback =
+                ((X509Certificate cert, String host, int port) =>
+                    trustSelfSigned);
+          IOClient ioClient = new IOClient(httpClient);
+          http.Response response = await ioClient.get(
+              'https://${host}:8443/setup/eureka_info?params=name,device_info');
           Map deviceInfo = jsonDecode(response.body);
+
           if (deviceInfo['name'] != null && deviceInfo['name'] != 'Unknown') {
             _friendlyName = deviceInfo['name'];
           } else if (deviceInfo['ssid'] != null) {
@@ -85,6 +94,7 @@ class CastDevice extends ChangeNotifier {
           if (_friendlyName == null) {
             _friendlyName = 'Unknown';
           }
+          print(exception.toString());
         }
       }
     }
