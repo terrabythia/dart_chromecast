@@ -72,12 +72,19 @@ class CastDevice extends ChangeNotifier {
           http.Response response = await http.get(
               'http://${host}:8008/setup/eureka_info?params=name,device_info');
           Map deviceInfo = jsonDecode(response.body);
-          _friendlyName = deviceInfo['name'];
-          if (null != deviceInfo['model_name']) {
+          if (deviceInfo['name'] != null && deviceInfo['name'] != 'Unknown') {
+            _friendlyName = deviceInfo['name'];
+          } else if (deviceInfo['ssid'] != null) {
+            _friendlyName = deviceInfo['ssid'];
+          }
+
+          if (deviceInfo['model_name'] != null) {
             _modelName = deviceInfo['model_name'];
           }
         } catch (exception) {
-          _friendlyName = 'Unknown';
+          if (_friendlyName == null) {
+            _friendlyName = 'Unknown';
+          }
         }
       }
     }
