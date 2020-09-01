@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
 
-import 'package:observable/observable.dart';
+import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
+import 'package:observable/observable.dart';
 
 enum CastDeviceType {
   Unknown,
@@ -23,9 +23,7 @@ enum GoogleCastModelType {
   CastGroup,
 }
 
-
 class CastDevice extends ChangeNotifier {
-
   final Logger log = new Logger('CastDevice');
 
   final String name;
@@ -67,8 +65,7 @@ class CastDevice extends ChangeNotifier {
         if (null != attr['md']) {
           _modelName = utf8.decode(attr['md']);
         }
-      }
-      else {
+      } else {
         // Attributes are not guaranteed to be set, if not set fetch them via the eureka_info url
         // Possible parameters: version,audio,name,build_info,detail,device_info,net,wifi,setup,settings,opt_in,opencast,multizone,proxy,night_mode_params,user_eq,room_equalizer
         try {
@@ -79,8 +76,7 @@ class CastDevice extends ChangeNotifier {
           if (null != deviceInfo['model_name']) {
             _modelName = deviceInfo['model_name'];
           }
-        }
-        catch(exception) {
+        } catch (exception) {
           _friendlyName = 'Unknown';
         }
       }
@@ -91,8 +87,7 @@ class CastDevice extends ChangeNotifier {
   CastDeviceType get deviceType {
     if (type.contains('_googlecast._tcp')) {
       return CastDeviceType.ChromeCast;
-    }
-    else if (type.contains('_airplay._tcp')) {
+    } else if (type.contains('_airplay._tcp')) {
       return CastDeviceType.AppleTV;
     }
     return CastDeviceType.Unknown;
@@ -128,5 +123,4 @@ class CastDevice extends ChangeNotifier {
         return GoogleCastModelType.NonGoogle;
     }
   }
-
 }

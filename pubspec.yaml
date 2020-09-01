@@ -1,5 +1,5 @@
 name: dart_chromecast
-version: 0.1.2
+version: 0.2.0
 description: Cast videos to your ChromeCast device
 author: Sander Bruggeman <sanderbruggeman@gmail.com>
 homepage: https://github.com/terrabythia/dart_chromecast
@@ -13,6 +13,7 @@ dependencies:
   http: ^0.12.0+2
   cli_util: ^0.1.3+2
   args: ^1.4.0
-  xml: ^3.0.0
+  xml: ^4.1.0
   observable: ^0.22.2
   logging: ^0.11.3+2
+  multicast_dns: ^0.2.2
