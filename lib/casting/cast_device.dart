@@ -26,7 +26,7 @@ enum GoogleCastModelType {
 }
 
 class CastDevice extends ChangeNotifier {
-  final Logger log = new Logger('CastDevice');
+  final Logger log = Logger('CastDevice');
 
   final String name;
   final String type;
@@ -72,7 +72,7 @@ class CastDevice extends ChangeNotifier {
         // Possible parameters: version,audio,name,build_info,detail,device_info,net,wifi,setup,settings,opt_in,opencast,multizone,proxy,night_mode_params,user_eq,room_equalizer
         try {
           bool trustSelfSigned = true;
-          HttpClient httpClient = new HttpClient()
+          HttpClient httpClient = HttpClient()
             ..badCertificateCallback =
                 ((X509Certificate cert, String host, int port) =>
                     trustSelfSigned);
@@ -91,9 +91,6 @@ class CastDevice extends ChangeNotifier {
             _modelName = deviceInfo['model_name'];
           }
         } catch (exception) {
-          if (_friendlyName == null) {
-            _friendlyName = 'Unknown';
-          }
           print(exception.toString());
         }
       }

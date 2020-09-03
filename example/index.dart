@@ -70,6 +70,8 @@ void main(List<String> arguments) async {
     host = pickedDevice.ip;
     port = pickedDevice.port;
 
+    print("Connecting to device: ${host}:${port}");
+
     log.fine("Picked: ${pickedDevice}");
   }
 

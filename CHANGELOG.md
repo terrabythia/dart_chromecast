@@ -1,3 +1,9 @@
+## 0.2.4
+* Fixed bug in friendlyName
+
+## 0.2.3
+* Updated project to follow Dart pub.dev conventions
+
 ## 0.2.2
 * Use https for the eureka_info URL
 
