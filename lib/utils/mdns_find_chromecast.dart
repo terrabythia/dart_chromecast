@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:multicast_dns/multicast_dns.dart';
 
 class CastDevice {
@@ -12,7 +14,11 @@ class CastDevice {
 
 Future<List<CastDevice>> find_chromecasts() async {
   const String name = '_googlecast._tcp.local';
-  final MDnsClient client = MDnsClient();
+  final client = MDnsClient(
+      rawDatagramSocketFactory: (dynamic host, int port,
+              {bool reuseAddress, bool reusePort, int ttl}) =>
+          RawDatagramSocket.bind(host, port,
+              reuseAddress: true, reusePort: false, ttl: ttl));
 
   final Map<String, CastDevice> map = {};
   // Start the client with default options.
