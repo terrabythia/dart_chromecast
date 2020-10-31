@@ -14,7 +14,7 @@ class CastDevice {
 
 Future<List<CastDevice>> find_chromecasts() async {
   const String name = '_googlecast._tcp.local';
-  final client = MDnsClient(
+  final MDnsClient client = MDnsClient(
       rawDatagramSocketFactory: (dynamic host, int port,
               {bool reuseAddress, bool reusePort, int ttl}) =>
           RawDatagramSocket.bind(host, port,
