@@ -2,6 +2,7 @@ class CastMedia {
 
   final String contentId;
   String title;
+  String subtitle;
   bool autoPlay = true;
   double position;
   String contentType;
@@ -10,6 +11,7 @@ class CastMedia {
   CastMedia({
     this.contentId,
     this.title,
+    this.subtitle,
     this.autoPlay = true,
     this.position = 0.0,
     this.contentType = 'video/mp4',
@@ -29,8 +31,12 @@ class CastMedia {
       'media': {
         'contentId': contentId,
         'contentType': contentType,
-        'images': images,
-        'title': title,
+        'metadata': {
+          'metadataType': 0,
+          'images': images.map((image) => {'url': image}).toList(),
+          'title': title,
+          'subtitle': subtitle
+        },
         'streamType': 'BUFFERED',
       }
     };
