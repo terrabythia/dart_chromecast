@@ -7,7 +7,7 @@ class CastDevice {
 
   CastDevice({this.name, this.ip, this.port});
 
-  String toString() => "CastDevice: ${name} -> ${ip}:${port}";
+  String toString() => "CastDevice: $name -> $ip:$port";
 }
 
 Future<List<CastDevice>> find_chromecasts() async {

@@ -35,8 +35,8 @@ abstract class CastChannel {
     castMessage.payloadUtf8 = jsonEncode(payload);
 
     Uint8List bytes = castMessage.writeToBuffer();
-    Uint32List headers =
-        Uint32List.fromList(writeUInt32BE(List<int?>(4), bytes.lengthInBytes));
+    Uint32List headers = Uint32List.fromList(writeUInt32BE(
+        List<int?>.filled(4, null, growable: false), bytes.lengthInBytes));
     Uint32List fullData =
         Uint32List.fromList(headers.toList()..addAll(bytes.toList()));
 

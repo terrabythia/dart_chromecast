@@ -119,9 +119,8 @@ class CastSender extends Object {
         'sessionId': _castSession!.castMediaStatus!.sessionId,
       });
     }
-    if (null != _socket) {
-      await _socket!.destroy();
-    }
+
+    _socket?.destroy();
     _dispose();
     connectionDidClose = true;
     return true;
@@ -235,18 +234,16 @@ class CastSender extends Object {
     CastMessage message = CastMessage.fromBuffer(slice);
     if (null != message) {
       // handle the message
-      if (null != message.payloadUtf8) {
-        Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
-        log.fine(payloadMap['type']);
-        if ('CLOSE' == payloadMap['type']) {
-          _dispose();
-          connectionDidClose = true;
-        }
-        if ('RECEIVER_STATUS' == payloadMap['type']) {
-          _handleReceiverStatus(payloadMap);
-        } else if ('MEDIA_STATUS' == payloadMap['type']) {
-          _handleMediaStatus(payloadMap);
-        }
+      Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
+      log.fine(payloadMap['type']);
+      if ('CLOSE' == payloadMap['type']) {
+        _dispose();
+        connectionDidClose = true;
+      }
+      if ('RECEIVER_STATUS' == payloadMap['type']) {
+        _handleReceiverStatus(payloadMap);
+      } else if ('MEDIA_STATUS' == payloadMap['type']) {
+        _handleMediaStatus(payloadMap);
       }
     }
   }
@@ -257,7 +254,7 @@ class CastSender extends Object {
         true == payload['status']?.containsKey('applications')) {
       // re-create the channel with the transportId the chromecast just sent us
       if (false == _castSession?.isConnected) {
-        _castSession = _castSession
+        _castSession = _castSession!
           ..mergeWithChromeCastSessionMap(payload['status']['applications'][0]);
         _connectionChannel = ConnectionChannel.create(_socket,
             sourceId: _castSession!.sourceId,

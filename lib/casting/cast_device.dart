@@ -79,7 +79,7 @@ class CastDevice extends ChangeNotifier {
                     trustSelfSigned);
           IOClient ioClient = new IOClient(httpClient);
           final uri = Uri.parse(
-              'https://${host}:8443/setup/eureka_info?params=name,device_info');
+              'https://$host:8443/setup/eureka_info?params=name,device_info');
           http.Response response = await ioClient.get(uri);
           Map deviceInfo = jsonDecode(response.body);
 
@@ -124,7 +124,6 @@ class CastDevice extends ChangeNotifier {
         return GoogleCastModelType.GoogleHome;
       case "Google Home Hub":
         return GoogleCastModelType.GoogleHub;
-        break;
       case "Google Home Mini":
         return GoogleCastModelType.GoogleMini;
       case "Google Home Max":
