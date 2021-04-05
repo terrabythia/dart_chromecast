@@ -34,7 +34,7 @@ void main(List<String> arguments) async {
       argResults.rest.map((String i) => CastMedia(contentId: i)).toList();
 
   String host = argResults['host'];
-  int port = int.parse(argResults['port']);
+  int? port = int.parse(argResults['port']);
   if ('' == host.trim()) {
     // search!
     print('Looking for ChromeCast devices...');
@@ -55,10 +55,10 @@ void main(List<String> arguments) async {
 
     print("Pick a device (1-${devices.length}):");
 
-    int choice = null;
+    int? choice = null;
 
     while (choice == null || choice < 0 || choice > devices.length) {
-      choice = int.parse(stdin.readLineSync());
+      choice = int.parse(stdin.readLineSync()!);
       if (choice == null) {
         print(
             "Please pick a number (1-${devices.length}) or press return to search again");
@@ -67,7 +67,7 @@ void main(List<String> arguments) async {
 
     find_chromecast.CastDevice pickedDevice = devices[choice - 1];
 
-    host = pickedDevice.ip;
+    host = pickedDevice.ip!;
     port = pickedDevice.port;
 
     print("Connecting to device: ${host}:${port}");
@@ -79,11 +79,11 @@ void main(List<String> arguments) async {
 }
 
 void startCasting(
-    List<CastMedia> media, String host, int port, bool append) async {
+    List<CastMedia> media, String host, int? port, bool? append) async {
   log.fine('Start Casting');
 
   // try to load previous state saved as json in saved_cast_state.json
-  Map savedState;
+  Map? savedState;
   try {
     File savedStateFile = await File("./saved_cast_state.json");
     if (null != savedStateFile) {
@@ -113,8 +113,8 @@ void startCasting(
   // listen for cast session updates and save the state when
   // the device is connected
   castSender.castSessionController.stream
-      .listen((CastSession castSession) async {
-    if (castSession.isConnected) {
+      .listen((CastSession? castSession) async {
+    if (castSession!.isConnected) {
       File savedStateFile = await File('./saved_cast_state.json');
       Map map = {
         'time': DateTime.now().millisecondsSinceEpoch,
@@ -124,13 +124,13 @@ void startCasting(
     }
   });
 
-  CastMediaStatus prevMediaStatus;
+  CastMediaStatus? prevMediaStatus;
   // Listen for media status updates, such as pausing, playing, seeking, playback etc.
   castSender.castMediaStatusController.stream
-      .listen((CastMediaStatus mediaStatus) {
+      .listen((CastMediaStatus? mediaStatus) {
     // show progress for example
     if (null != prevMediaStatus &&
-        mediaStatus.volume != prevMediaStatus.volume) {
+        mediaStatus!.volume != prevMediaStatus!.volume) {
       // volume just updated
       log.info('Volume just updated to ${mediaStatus.volume}');
     }
@@ -210,9 +210,9 @@ void _handleUserInput(CastSender castSender, List<int> data) {
     // left or right = seek 10s back or forth
     double seekBy = 67 == keyCode ? 10.0 : -10.0;
     if (null != castSender.castSession &&
-        null != castSender.castSession.castMediaStatus) {
+        null != castSender.castSession!.castMediaStatus) {
       castSender.seek(
-        max(0.0, castSender.castSession.castMediaStatus.position + seekBy),
+        max(0.0, castSender.castSession!.castMediaStatus!.position! + seekBy),
       );
     }
   }

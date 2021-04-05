@@ -2,7 +2,7 @@
 //  Generated code. Do not modify.
 //  source: lib/proto/cast_channel.proto
 //
-// @dart = 2.3
+
 // ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
 
 // ignore_for_file: UNDEFINED_SHOWN_NAME,UNUSED_SHOWN_NAME
@@ -17,7 +17,7 @@ class CastMessage_ProtocolVersion extends $pb.ProtobufEnum {
   ];
 
   static final $core.Map<$core.int, CastMessage_ProtocolVersion> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static CastMessage_ProtocolVersion valueOf($core.int value) => _byValue[value];
+  static CastMessage_ProtocolVersion? valueOf($core.int value) => _byValue[value];
 
   const CastMessage_ProtocolVersion._($core.int v, $core.String n) : super(v, n);
 }
@@ -32,7 +32,7 @@ class CastMessage_PayloadType extends $pb.ProtobufEnum {
   ];
 
   static final $core.Map<$core.int, CastMessage_PayloadType> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static CastMessage_PayloadType valueOf($core.int value) => _byValue[value];
+  static CastMessage_PayloadType? valueOf($core.int value) => _byValue[value];
 
   const CastMessage_PayloadType._($core.int v, $core.String n) : super(v, n);
 }
@@ -47,7 +47,7 @@ class AuthError_ErrorType extends $pb.ProtobufEnum {
   ];
 
   static final $core.Map<$core.int, AuthError_ErrorType> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static AuthError_ErrorType valueOf($core.int value) => _byValue[value];
+  static AuthError_ErrorType? valueOf($core.int value) => _byValue[value];
 
   const AuthError_ErrorType._($core.int v, $core.String n) : super(v, n);
 }

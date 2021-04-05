@@ -1,9 +1,9 @@
 import 'package:multicast_dns/multicast_dns.dart';
 
 class CastDevice {
-  final String name;
-  final String ip;
-  final int port;
+  final String? name;
+  final String? ip;
+  final int? port;
 
   CastDevice({this.name, this.ip, this.port});
 

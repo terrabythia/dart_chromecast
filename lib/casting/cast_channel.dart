@@ -8,16 +8,16 @@ import '../proto/cast_channel.pb.dart';
 abstract class CastChannel {
   static int _requestId = 1;
 
-  final Socket _socket;
-  String _sourceId;
-  String _destinationId;
-  String _namespace;
+  final Socket? _socket;
+  String? _sourceId;
+  String? _destinationId;
+  String? _namespace;
 
   CastChannel(
       this._socket, this._sourceId, this._destinationId, this._namespace);
 
-  CastChannel.CreateWithSocket(Socket socket,
-      {String sourceId, String destinationId, String namespace})
+  CastChannel.CreateWithSocket(Socket? socket,
+      {String? sourceId, String? destinationId, String? namespace})
       : _socket = socket,
         _sourceId = sourceId,
         _destinationId = destinationId,
@@ -28,15 +28,15 @@ abstract class CastChannel {
 
     CastMessage castMessage = CastMessage();
     castMessage.protocolVersion = CastMessage_ProtocolVersion.CASTV2_1_0;
-    castMessage.sourceId = _sourceId;
-    castMessage.destinationId = _destinationId;
-    castMessage.namespace = _namespace;
+    castMessage.sourceId = _sourceId!;
+    castMessage.destinationId = _destinationId!;
+    castMessage.namespace = _namespace!;
     castMessage.payloadType = CastMessage_PayloadType.STRING;
     castMessage.payloadUtf8 = jsonEncode(payload);
 
     Uint8List bytes = castMessage.writeToBuffer();
     Uint32List headers =
-        Uint32List.fromList(writeUInt32BE(List<int>(4), bytes.lengthInBytes));
+        Uint32List.fromList(writeUInt32BE(List<int?>(4), bytes.lengthInBytes));
     Uint32List fullData =
         Uint32List.fromList(headers.toList()..addAll(bytes.toList()));
 
@@ -48,7 +48,7 @@ abstract class CastChannel {
       print('PING');
     }
 
-    _socket.add(fullData);
+    _socket!.add(fullData);
 
     _requestId++;
   }
