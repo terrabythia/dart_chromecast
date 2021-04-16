@@ -367,10 +367,25 @@ class CastSender extends Object {
     if (null != _heartbeatChannel) {
       _heartbeatChannel.sendMessage({'type': 'PING'});
 
-//      _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
       Timer(Duration(seconds: 5), _heartbeatTick);
     }
   }
+
+  void setPlayBackRate(double rate) {
+    Map<String, dynamic> map = {'playbackRate': rate};
+    _castMediaAction('SET_PLAYBACK_RATE', map);
+  }
+
+  void setSubtitles(int trackId) {
+    Map<String, dynamic> map = {'activeTrackIds': [trackId]};
+    _castMediaAction('EDIT_TRACKS_INFO', map);
+  }
+
+  void disableSubtitles() {
+    Map<String, dynamic> map = {'activeTrackIds': []};
+    _castMediaAction('EDIT_TRACKS_INFO', map);
+  }
+
 
   void _dispose() {
     castSessionController.close();
@@ -382,17 +397,5 @@ class CastSender extends Object {
     _mediaChannel = null;
     _castSession = null;
     _contentQueue = [];
-  }
-
-  @override
-  logError(String message, [Error error]) {
-    // TODO: implement logError
-    return null;
-  }
-
-  @override
-  logInfo(String message) {
-    // TODO: implement logInfo
-    return null;
   }
 }

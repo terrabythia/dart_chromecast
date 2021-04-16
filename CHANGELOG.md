@@ -13,3 +13,8 @@
 ## 0.2.0
 * Added multicast_dns package
 * Host parameter is now optional when running index.dart from the command line
+
+## 0.3.0
+* Update deps.
+* Adding support for Subtitles and PlaybackRate
+* remove deprecated/unused code.
