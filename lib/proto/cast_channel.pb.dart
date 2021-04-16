@@ -1,9 +1,9 @@
 ///
 //  Generated code. Do not modify.
-//  source: lib/proto/cast_channel.proto
+//  source: cast_channel.proto
 //
-
-// ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
+// @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,unnecessary_const,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type,unnecessary_this,prefer_final_fields
 
 import 'dart:core' as $core;
 
@@ -14,22 +14,62 @@ import 'cast_channel.pbenum.dart';
 export 'cast_channel.pbenum.dart';
 
 class CastMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('CastMessage', package: const $pb.PackageName('extensions.api.cast_channel'), createEmptyInstance: create)
-    ..e<CastMessage_ProtocolVersion>(1, 'protocolVersion', $pb.PbFieldType.QE, defaultOrMaker: CastMessage_ProtocolVersion.CASTV2_1_0, valueOf: CastMessage_ProtocolVersion.valueOf, enumValues: CastMessage_ProtocolVersion.values)
-    ..aQS(2, 'sourceId')
-    ..aQS(3, 'destinationId')
-    ..aQS(4, 'namespace')
-    ..e<CastMessage_PayloadType>(5, 'payloadType', $pb.PbFieldType.QE, defaultOrMaker: CastMessage_PayloadType.STRING, valueOf: CastMessage_PayloadType.valueOf, enumValues: CastMessage_PayloadType.values)
-    ..aOS(6, 'payloadUtf8')
-    ..a<$core.List<$core.int>>(7, 'payloadBinary', $pb.PbFieldType.OY)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CastMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'extensions.api.cast_channel'), createEmptyInstance: create)
+    ..e<CastMessage_ProtocolVersion>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'protocolVersion', $pb.PbFieldType.QE, defaultOrMaker: CastMessage_ProtocolVersion.CASTV2_1_0, valueOf: CastMessage_ProtocolVersion.valueOf, enumValues: CastMessage_ProtocolVersion.values)
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceId')
+    ..aQS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationId')
+    ..aQS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'namespace')
+    ..e<CastMessage_PayloadType>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payloadType', $pb.PbFieldType.QE, defaultOrMaker: CastMessage_PayloadType.STRING, valueOf: CastMessage_PayloadType.valueOf, enumValues: CastMessage_PayloadType.values)
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payloadUtf8')
+    ..a<$core.List<$core.int>>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payloadBinary', $pb.PbFieldType.OY)
   ;
 
   CastMessage._() : super();
-  factory CastMessage() => create();
+  factory CastMessage({
+    CastMessage_ProtocolVersion? protocolVersion,
+    $core.String? sourceId,
+    $core.String? destinationId,
+    $core.String? namespace,
+    CastMessage_PayloadType? payloadType,
+    $core.String? payloadUtf8,
+    $core.List<$core.int>? payloadBinary,
+  }) {
+    final _result = create();
+    if (protocolVersion != null) {
+      _result.protocolVersion = protocolVersion;
+    }
+    if (sourceId != null) {
+      _result.sourceId = sourceId;
+    }
+    if (destinationId != null) {
+      _result.destinationId = destinationId;
+    }
+    if (namespace != null) {
+      _result.namespace = namespace;
+    }
+    if (payloadType != null) {
+      _result.payloadType = payloadType;
+    }
+    if (payloadUtf8 != null) {
+      _result.payloadUtf8 = payloadUtf8;
+    }
+    if (payloadBinary != null) {
+      _result.payloadBinary = payloadBinary;
+    }
+    return _result;
+  }
   factory CastMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CastMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   CastMessage clone() => CastMessage()..mergeFromMessage(this);
-  CastMessage copyWith(void Function(CastMessage) updates) => super.copyWith((message) => updates(message as CastMessage)) as CastMessage;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CastMessage copyWith(void Function(CastMessage) updates) => super.copyWith((message) => updates(message as CastMessage)) as CastMessage; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static CastMessage create() => CastMessage._();
@@ -104,7 +144,7 @@ class CastMessage extends $pb.GeneratedMessage {
 }
 
 class AuthChallenge extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('AuthChallenge', package: const $pb.PackageName('extensions.api.cast_channel'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AuthChallenge', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'extensions.api.cast_channel'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
@@ -112,8 +152,16 @@ class AuthChallenge extends $pb.GeneratedMessage {
   factory AuthChallenge() => create();
   factory AuthChallenge.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AuthChallenge.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   AuthChallenge clone() => AuthChallenge()..mergeFromMessage(this);
-  AuthChallenge copyWith(void Function(AuthChallenge) updates) => super.copyWith((message) => updates(message as AuthChallenge)) as AuthChallenge;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AuthChallenge copyWith(void Function(AuthChallenge) updates) => super.copyWith((message) => updates(message as AuthChallenge)) as AuthChallenge; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static AuthChallenge create() => AuthChallenge._();
@@ -125,18 +173,42 @@ class AuthChallenge extends $pb.GeneratedMessage {
 }
 
 class AuthResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('AuthResponse', package: const $pb.PackageName('extensions.api.cast_channel'), createEmptyInstance: create)
-    ..a<$core.List<$core.int>>(1, 'signature', $pb.PbFieldType.QY)
-    ..a<$core.List<$core.int>>(2, 'clientAuthCertificate', $pb.PbFieldType.QY)
-    ..p<$core.List<$core.int>>(3, 'clientCa', $pb.PbFieldType.PY)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AuthResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'extensions.api.cast_channel'), createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'signature', $pb.PbFieldType.QY)
+    ..a<$core.List<$core.int>>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'clientAuthCertificate', $pb.PbFieldType.QY)
+    ..p<$core.List<$core.int>>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'clientCa', $pb.PbFieldType.PY)
   ;
 
   AuthResponse._() : super();
-  factory AuthResponse() => create();
+  factory AuthResponse({
+    $core.List<$core.int>? signature,
+    $core.List<$core.int>? clientAuthCertificate,
+    $core.Iterable<$core.List<$core.int>>? clientCa,
+  }) {
+    final _result = create();
+    if (signature != null) {
+      _result.signature = signature;
+    }
+    if (clientAuthCertificate != null) {
+      _result.clientAuthCertificate = clientAuthCertificate;
+    }
+    if (clientCa != null) {
+      _result.clientCa.addAll(clientCa);
+    }
+    return _result;
+  }
   factory AuthResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AuthResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   AuthResponse clone() => AuthResponse()..mergeFromMessage(this);
-  AuthResponse copyWith(void Function(AuthResponse) updates) => super.copyWith((message) => updates(message as AuthResponse)) as AuthResponse;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AuthResponse copyWith(void Function(AuthResponse) updates) => super.copyWith((message) => updates(message as AuthResponse)) as AuthResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static AuthResponse create() => AuthResponse._();
@@ -169,16 +241,32 @@ class AuthResponse extends $pb.GeneratedMessage {
 }
 
 class AuthError extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('AuthError', package: const $pb.PackageName('extensions.api.cast_channel'), createEmptyInstance: create)
-    ..e<AuthError_ErrorType>(1, 'errorType', $pb.PbFieldType.QE, defaultOrMaker: AuthError_ErrorType.INTERNAL_ERROR, valueOf: AuthError_ErrorType.valueOf, enumValues: AuthError_ErrorType.values)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AuthError', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'extensions.api.cast_channel'), createEmptyInstance: create)
+    ..e<AuthError_ErrorType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorType', $pb.PbFieldType.QE, defaultOrMaker: AuthError_ErrorType.INTERNAL_ERROR, valueOf: AuthError_ErrorType.valueOf, enumValues: AuthError_ErrorType.values)
   ;
 
   AuthError._() : super();
-  factory AuthError() => create();
+  factory AuthError({
+    AuthError_ErrorType? errorType,
+  }) {
+    final _result = create();
+    if (errorType != null) {
+      _result.errorType = errorType;
+    }
+    return _result;
+  }
   factory AuthError.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AuthError.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   AuthError clone() => AuthError()..mergeFromMessage(this);
-  AuthError copyWith(void Function(AuthError) updates) => super.copyWith((message) => updates(message as AuthError)) as AuthError;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AuthError copyWith(void Function(AuthError) updates) => super.copyWith((message) => updates(message as AuthError)) as AuthError; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static AuthError create() => AuthError._();
@@ -199,18 +287,42 @@ class AuthError extends $pb.GeneratedMessage {
 }
 
 class DeviceAuthMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('DeviceAuthMessage', package: const $pb.PackageName('extensions.api.cast_channel'), createEmptyInstance: create)
-    ..aOM<AuthChallenge>(1, 'challenge', subBuilder: AuthChallenge.create)
-    ..aOM<AuthResponse>(2, 'response', subBuilder: AuthResponse.create)
-    ..aOM<AuthError>(3, 'error', subBuilder: AuthError.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeviceAuthMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'extensions.api.cast_channel'), createEmptyInstance: create)
+    ..aOM<AuthChallenge>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'challenge', subBuilder: AuthChallenge.create)
+    ..aOM<AuthResponse>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'response', subBuilder: AuthResponse.create)
+    ..aOM<AuthError>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'error', subBuilder: AuthError.create)
   ;
 
   DeviceAuthMessage._() : super();
-  factory DeviceAuthMessage() => create();
+  factory DeviceAuthMessage({
+    AuthChallenge? challenge,
+    AuthResponse? response,
+    AuthError? error,
+  }) {
+    final _result = create();
+    if (challenge != null) {
+      _result.challenge = challenge;
+    }
+    if (response != null) {
+      _result.response = response;
+    }
+    if (error != null) {
+      _result.error = error;
+    }
+    return _result;
+  }
   factory DeviceAuthMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeviceAuthMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   DeviceAuthMessage clone() => DeviceAuthMessage()..mergeFromMessage(this);
-  DeviceAuthMessage copyWith(void Function(DeviceAuthMessage) updates) => super.copyWith((message) => updates(message as DeviceAuthMessage)) as DeviceAuthMessage;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeviceAuthMessage copyWith(void Function(DeviceAuthMessage) updates) => super.copyWith((message) => updates(message as DeviceAuthMessage)) as DeviceAuthMessage; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static DeviceAuthMessage create() => DeviceAuthMessage._();
