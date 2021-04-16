@@ -2,7 +2,7 @@
 //  Generated code. Do not modify.
 //  source: lib/proto/cast_channel.proto
 //
-// @dart = 2.3
+
 // ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
 
 import 'dart:core' as $core;
@@ -29,7 +29,7 @@ class CastMessage extends $pb.GeneratedMessage {
   factory CastMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CastMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   CastMessage clone() => CastMessage()..mergeFromMessage(this);
-  CastMessage copyWith(void Function(CastMessage) updates) => super.copyWith((message) => updates(message as CastMessage));
+  CastMessage copyWith(void Function(CastMessage) updates) => super.copyWith((message) => updates(message as CastMessage)) as CastMessage;
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static CastMessage create() => CastMessage._();
@@ -37,7 +37,7 @@ class CastMessage extends $pb.GeneratedMessage {
   static $pb.PbList<CastMessage> createRepeated() => $pb.PbList<CastMessage>();
   @$core.pragma('dart2js:noInline')
   static CastMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CastMessage>(create);
-  static CastMessage _defaultInstance;
+  static CastMessage? _defaultInstance;
 
   @$pb.TagNumber(1)
   CastMessage_ProtocolVersion get protocolVersion => $_getN(0);
@@ -113,7 +113,7 @@ class AuthChallenge extends $pb.GeneratedMessage {
   factory AuthChallenge.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AuthChallenge.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   AuthChallenge clone() => AuthChallenge()..mergeFromMessage(this);
-  AuthChallenge copyWith(void Function(AuthChallenge) updates) => super.copyWith((message) => updates(message as AuthChallenge));
+  AuthChallenge copyWith(void Function(AuthChallenge) updates) => super.copyWith((message) => updates(message as AuthChallenge)) as AuthChallenge;
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static AuthChallenge create() => AuthChallenge._();
@@ -121,7 +121,7 @@ class AuthChallenge extends $pb.GeneratedMessage {
   static $pb.PbList<AuthChallenge> createRepeated() => $pb.PbList<AuthChallenge>();
   @$core.pragma('dart2js:noInline')
   static AuthChallenge getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AuthChallenge>(create);
-  static AuthChallenge _defaultInstance;
+  static AuthChallenge? _defaultInstance;
 }
 
 class AuthResponse extends $pb.GeneratedMessage {
@@ -136,7 +136,7 @@ class AuthResponse extends $pb.GeneratedMessage {
   factory AuthResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AuthResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   AuthResponse clone() => AuthResponse()..mergeFromMessage(this);
-  AuthResponse copyWith(void Function(AuthResponse) updates) => super.copyWith((message) => updates(message as AuthResponse));
+  AuthResponse copyWith(void Function(AuthResponse) updates) => super.copyWith((message) => updates(message as AuthResponse)) as AuthResponse;
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static AuthResponse create() => AuthResponse._();
@@ -144,7 +144,7 @@ class AuthResponse extends $pb.GeneratedMessage {
   static $pb.PbList<AuthResponse> createRepeated() => $pb.PbList<AuthResponse>();
   @$core.pragma('dart2js:noInline')
   static AuthResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AuthResponse>(create);
-  static AuthResponse _defaultInstance;
+  static AuthResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.List<$core.int> get signature => $_getN(0);
@@ -178,7 +178,7 @@ class AuthError extends $pb.GeneratedMessage {
   factory AuthError.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AuthError.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   AuthError clone() => AuthError()..mergeFromMessage(this);
-  AuthError copyWith(void Function(AuthError) updates) => super.copyWith((message) => updates(message as AuthError));
+  AuthError copyWith(void Function(AuthError) updates) => super.copyWith((message) => updates(message as AuthError)) as AuthError;
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static AuthError create() => AuthError._();
@@ -186,7 +186,7 @@ class AuthError extends $pb.GeneratedMessage {
   static $pb.PbList<AuthError> createRepeated() => $pb.PbList<AuthError>();
   @$core.pragma('dart2js:noInline')
   static AuthError getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AuthError>(create);
-  static AuthError _defaultInstance;
+  static AuthError? _defaultInstance;
 
   @$pb.TagNumber(1)
   AuthError_ErrorType get errorType => $_getN(0);
@@ -210,7 +210,7 @@ class DeviceAuthMessage extends $pb.GeneratedMessage {
   factory DeviceAuthMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeviceAuthMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   DeviceAuthMessage clone() => DeviceAuthMessage()..mergeFromMessage(this);
-  DeviceAuthMessage copyWith(void Function(DeviceAuthMessage) updates) => super.copyWith((message) => updates(message as DeviceAuthMessage));
+  DeviceAuthMessage copyWith(void Function(DeviceAuthMessage) updates) => super.copyWith((message) => updates(message as DeviceAuthMessage)) as DeviceAuthMessage;
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static DeviceAuthMessage create() => DeviceAuthMessage._();
@@ -218,7 +218,7 @@ class DeviceAuthMessage extends $pb.GeneratedMessage {
   static $pb.PbList<DeviceAuthMessage> createRepeated() => $pb.PbList<DeviceAuthMessage>();
   @$core.pragma('dart2js:noInline')
   static DeviceAuthMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeviceAuthMessage>(create);
-  static DeviceAuthMessage _defaultInstance;
+  static DeviceAuthMessage? _defaultInstance;
 
   @$pb.TagNumber(1)
   AuthChallenge get challenge => $_getN(0);
