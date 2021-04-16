@@ -398,16 +398,4 @@ class CastSender extends Object {
     _castSession = null;
     _contentQueue = [];
   }
-
-  @override
-  logError(String message, [Error error]) {
-    // TODO: implement logError
-    return null;
-  }
-
-  @override
-  logInfo(String message) {
-    // TODO: implement logInfo
-    return null;
-  }
 }
