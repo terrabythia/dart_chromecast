@@ -2,9 +2,9 @@ import 'package:dart_chromecast/casting/cast_media_status.dart';
 
 class CastSession {
 
-  String sourceId;
-  String destinationId;
-  CastMediaStatus castMediaStatus;
+  String? sourceId;
+  String? destinationId;
+  CastMediaStatus? castMediaStatus;
 
   bool isConnected;
   bool isReadyForMedia = false;
@@ -20,7 +20,7 @@ class CastSession {
 
   // TODO: from apple tv map
 
-  Map<String, String> toMap() {
+  Map<String, String?> toMap() {
     return {
       'sourceId': sourceId,
       'destinationId': destinationId,
