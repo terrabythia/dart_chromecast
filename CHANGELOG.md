@@ -1,3 +1,7 @@
+## 0.2.5
+* Removed unused observable package
+* Migrated to dart 2.12 with null safety
+
 ## 0.2.4
 * Fixed bug in friendlyName
 
