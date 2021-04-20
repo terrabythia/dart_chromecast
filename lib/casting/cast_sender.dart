@@ -232,19 +232,17 @@ class CastSender extends Object {
     List<int> slice = event.getRange(4, event.length).toList();
 
     CastMessage message = CastMessage.fromBuffer(slice);
-    if (null != message) {
-      // handle the message
-      Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
-      log.fine(payloadMap['type']);
-      if ('CLOSE' == payloadMap['type']) {
-        _dispose();
-        connectionDidClose = true;
-      }
-      if ('RECEIVER_STATUS' == payloadMap['type']) {
-        _handleReceiverStatus(payloadMap);
-      } else if ('MEDIA_STATUS' == payloadMap['type']) {
-        _handleMediaStatus(payloadMap);
-      }
+    // handle the message
+    Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
+    log.fine(payloadMap['type']);
+    if ('CLOSE' == payloadMap['type']) {
+      _dispose();
+      connectionDidClose = true;
+    }
+    if ('RECEIVER_STATUS' == payloadMap['type']) {
+      _handleReceiverStatus(payloadMap);
+    } else if ('MEDIA_STATUS' == payloadMap['type']) {
+      _handleMediaStatus(payloadMap);
     }
   }
 
