@@ -1,5 +1,4 @@
 class LogInterface {
-
   Function? _logCallback;
 
   setLogCallback(void logCallback(Error e, String s)) {
@@ -12,10 +11,9 @@ class LogInterface {
     }
   }
 
-  logError(String message, [ Object? error ]) {
+  logError(String message, [Object? error]) {
     if (null != _logCallback) {
       _logCallback!(error, message);
     }
   }
-
 }

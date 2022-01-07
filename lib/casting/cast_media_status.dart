@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:logging/logging.dart';
 
 class CastMediaStatus {
-
   final Logger log = new Logger('CastMediaStatus');
 
   dynamic _sessionId;
@@ -10,7 +9,7 @@ class CastMediaStatus {
   final String? _nativeStatus;
   final bool _isPlaying;
   final bool _isPaused;
-  final bool _isMuted ;
+  final bool _isMuted;
   final bool _isIdle;
   final bool _isFinished;
   final bool _isCancelled;
@@ -27,13 +26,19 @@ class CastMediaStatus {
         _isIdle = 'IDLE' == mediaStatus['playerState'],
         _isPlaying = 'PLAYING' == mediaStatus['playerState'],
         _isPaused = 'PAUSED' == mediaStatus['playerState'],
-        _isMuted = null != mediaStatus['volume'] && true == mediaStatus['volume']['muted'],
+        _isMuted = null != mediaStatus['volume'] &&
+            true == mediaStatus['volume']['muted'],
         _isLoading = 'LOADING' == mediaStatus['playerState'],
         _isBuffering = 'BUFFERING' == mediaStatus['playerState'],
-        _isFinished = 'IDLE' == mediaStatus['playerState'] && 'FINISHED' == mediaStatus['idleReason'],
-        _isCancelled = 'IDLE' == mediaStatus['playerState'] && 'CANCELLED' == mediaStatus['idleReason'],
-        _hasError = 'IDLE' == mediaStatus['playerState'] && 'ERROR' == mediaStatus['idleReason'],
-        _volume = null != mediaStatus['volume'] ? mediaStatus['volume']['level'].toDouble() : null,
+        _isFinished = 'IDLE' == mediaStatus['playerState'] &&
+            'FINISHED' == mediaStatus['idleReason'],
+        _isCancelled = 'IDLE' == mediaStatus['playerState'] &&
+            'CANCELLED' == mediaStatus['idleReason'],
+        _hasError = 'IDLE' == mediaStatus['playerState'] &&
+            'ERROR' == mediaStatus['idleReason'],
+        _volume = null != mediaStatus['volume']
+            ? mediaStatus['volume']['level'].toDouble()
+            : null,
         _position = mediaStatus['currentTime'].toDouble(),
         _media = mediaStatus['media'];
 
@@ -84,5 +89,4 @@ class CastMediaStatus {
       'media': _media
     });
   }
-
 }

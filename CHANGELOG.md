@@ -1,3 +1,7 @@
+## 0.2.6
+* Formatted dart files
+* Rename example/index.dart to example/main.dart
+
 ## 0.2.5
 * Removed unused observable package
 * Migrated to dart 2.12 with null safety
