@@ -44,7 +44,7 @@ class CastDevice {
   /// * ca - Unknown (e.g. "1234");
   /// * ic - Icon path (e.g. "/setup/icon.png");
   /// * ve - Version (e.g. "04").
-  final Map<String, Uint8List>? attr;
+  final Map<String, Uint8List?>? attr;
 
   String? _friendlyName;
   String? _modelName;
