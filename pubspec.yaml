@@ -8,7 +8,6 @@ environment:
 
 dependencies:
   protobuf: ^2.0.0
-  protoc_plugin: ^20.0.0
   http: ^0.13.1
   cli_util: ^0.3.0
   args: ^2.0.0
