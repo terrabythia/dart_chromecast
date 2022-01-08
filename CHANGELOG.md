@@ -1,3 +1,6 @@
+## 0.3.3
+* Update metadata to support images, titles and subtitles
+
 ## 0.3.2
 * Replace dart:io with universal:io package to support multiple platforms
 

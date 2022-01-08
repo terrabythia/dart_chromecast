@@ -1,5 +1,5 @@
 name: dart_chromecast
-version: 0.3.2
+version: 0.3.3
 description: Pure dart package to cast videos to your ChromeCast device and control their playback
 homepage: https://github.com/terrabythia/dart_chromecast
 
