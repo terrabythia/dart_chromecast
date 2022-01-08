@@ -1,3 +1,7 @@
+## 0.3.1
+* Fixed bug in updating ChromeCast volume
+* Some logging updates
+
 ## 0.3.0
 * Removed package protoc_plugin
 

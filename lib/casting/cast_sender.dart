@@ -1,7 +1,3 @@
-/**
- * TODO:
- * - volume, treble, bass?
- */
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -41,7 +37,6 @@ class CastSender extends Object {
   CastMedia? _currentCastMedia;
 
   CastSender(this.device) {
-    // TODO: _airplay._tcp
     _contentQueue = [];
 
     castSessionController = StreamController.broadcast();
@@ -67,10 +62,6 @@ class CastSender extends Object {
 
     // start heartbeat
     _heartbeatTick();
-
-    // start status tick
-    // TODO: only start receiver status tick when there are subscriptions to it
-//    _receiverStatusTick();
 
     return true;
   }
@@ -113,6 +104,7 @@ class CastSender extends Object {
   }
 
   Future<bool> disconnect() async {
+    log.info("cast_sender.disconnect()");
     _connectionChannel?.sendMessage({
       'type': 'CLOSE',
     });
@@ -147,17 +139,6 @@ class CastSender extends Object {
     }
   }
 
-  void _castMediaAction(type, [params]) {
-    if (null == params) params = {};
-    if (null != _mediaChannel && null != _castSession?.castMediaStatus) {
-      _mediaChannel!.sendMessage(params
-        ..addAll({
-          'mediaSessionId': _castSession!.castMediaStatus!.sessionId,
-          'type': type,
-        }));
-    }
-  }
-
   void play() {
     _castMediaAction('PLAY');
     log.info('PLAY');
@@ -188,13 +169,34 @@ class CastSender extends Object {
   }
 
   void setVolume(double volume) {
-    Map<String, dynamic> map = {'volume': min(volume, 1)};
-    _castMediaAction('VOLUME', map);
+    Map<String, dynamic> map = {
+      'volume': {'level': volume, 'muted': false}
+    };
+    _castMediaAction('SET_VOLUME', map);
+  }
+
+  void mute() {
+    Map<String, dynamic> map = {
+      'volume': {'muted': true}
+    };
+    _castMediaAction('SET_VOLUME', map);
   }
 
   CastSession? get castSession => _castSession;
 
   // private
+  void _castMediaAction(type, [params]) {
+    if (null == params) params = {};
+    if (null != _mediaChannel && null != _castSession?.castMediaStatus) {
+      dynamic message = params
+        ..addAll({
+          'mediaSessionId': _castSession!.castMediaStatus!.sessionId,
+          'type': type,
+        });
+      log.info("Send message to mediaChannel: " + jsonEncode(message));
+      _mediaChannel!.sendMessage(message);
+    }
+  }
 
   Future<SecureSocket?> _createSocket() async {
     if (null == _socket) {
@@ -243,7 +245,7 @@ class CastSender extends Object {
   }
 
   void _handleReceiverStatus(Map payload) {
-    log.fine(payload.toString());
+    log.info("_handleReceiverStatus()");
     if (null == _mediaChannel &&
         true == payload['status']?.containsKey('applications')) {
       // re-create the channel with the transportId the chromecast just sent us
@@ -280,19 +282,15 @@ class CastSender extends Object {
   }
 
   void _handleMediaStatus(Map payload) {
-    log.fine('Handle media status: ' + payload.toString());
-
     if (null != payload['status']) {
-      if (!_castSession!.isConnected) {
+      if (_castSession != null && !_castSession!.isConnected) {
         _castSession!.isConnected = true;
         _handleContentQueue();
       }
 
-      if (payload['status'].length > 0) {
+      if (_castSession != null && payload['status'].length > 0) {
         _castSession!.castMediaStatus =
             CastMediaStatus.fromChromeCastMediaStatus(payload['status'][0]);
-
-        log.fine('Media status ${_castSession!.castMediaStatus.toString()}');
 
         if (_castSession!.castMediaStatus!.isFinished) {
           _handleContentQueue();
@@ -357,15 +355,12 @@ class CastSender extends Object {
   void _heartbeatTick() {
     if (null != _heartbeatChannel) {
       _heartbeatChannel!.sendMessage({'type': 'PING'});
-
-//      _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
       Timer(Duration(seconds: 5), _heartbeatTick);
     }
   }
 
   void _dispose() {
-    castSessionController.close();
-    castMediaStatusController.close();
+    log.info("cast_sender._dispose()");
     _socket = null;
     _heartbeatChannel = null;
     _connectionChannel = null;
@@ -373,17 +368,5 @@ class CastSender extends Object {
     _mediaChannel = null;
     _castSession = null;
     _contentQueue = [];
-  }
-
-  @override
-  logError(String message, [Error? error]) {
-    // TODO: implement logError
-    return null;
-  }
-
-  @override
-  logInfo(String message) {
-    // TODO: implement logInfo
-    return null;
   }
 }
