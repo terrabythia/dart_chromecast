@@ -36,9 +36,7 @@ class CastMedia {
         'streamType': 'BUFFERED',
         'metadata': {
           'metadataType': 0,
-          'images': images != null
-              ? images?.map((image) => {'url': image}).toList()
-              : [],
+          'images': images?.map((image) => {'url': image}).toList(),
           'title': title,
           'subtitle': subtitle,
         },
