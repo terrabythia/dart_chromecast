@@ -4,7 +4,7 @@ description: Pure dart package to cast videos to your ChromeCast device and cont
 homepage: https://github.com/terrabythia/dart_chromecast
 
 environment:
-  sdk: ^2.12.0
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   protobuf: ^2.0.1

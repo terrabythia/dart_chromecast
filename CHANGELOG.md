@@ -1,3 +1,6 @@
+## 0.3.0
+* Removed package protoc_plugin
+
 ## 0.2.6
 * Formatted dart files
 * Rename example/index.dart to example/main.dart
