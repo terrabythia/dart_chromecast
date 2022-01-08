@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:args/args.dart';
@@ -7,6 +6,7 @@ import 'package:dart_chromecast/casting/cast.dart';
 import 'package:dart_chromecast/utils/mdns_find_chromecast.dart'
     as find_chromecast;
 import 'package:logging/logging.dart';
+import 'package:universal_io/io.dart';
 
 final Logger log = new Logger('Chromecast CLI');
 
@@ -15,6 +15,9 @@ void main(List<String> arguments) async {
   final parser = new ArgParser()
     ..addOption('host', abbr: 'h', defaultsTo: '')
     ..addOption('port', abbr: 'p', defaultsTo: '8009')
+    ..addOption('title', abbr: 't', defaultsTo: null)
+    ..addOption('subtitle', abbr: 's', defaultsTo: null)
+    ..addOption('image', abbr: 'i', defaultsTo: '')
     ..addFlag('append', abbr: 'a', defaultsTo: false)
     ..addFlag('debug', abbr: 'd', defaultsTo: false);
 
@@ -29,9 +32,17 @@ void main(List<String> arguments) async {
     Logger.root.level = Level.OFF;
   }
 
+  String imageUrl = argResults['image'];
+  final List<String> images = imageUrl != '' ? [imageUrl] : [];
+
   // turn each rest argument string into a CastMedia instance
-  final List<CastMedia> media =
-      argResults.rest.map((String i) => CastMedia(contentId: i)).toList();
+  final List<CastMedia> media = argResults.rest
+      .map((String i) => CastMedia(
+          contentId: i,
+          images: images,
+          title: argResults['title'],
+          subtitle: argResults['subtitle']))
+      .toList();
 
   String host = argResults['host'];
   int? port = int.parse(argResults['port']);
