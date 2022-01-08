@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
+import 'package:universal_io/io.dart';
 
 import './../writer.dart';
 import '../proto/cast_channel.pb.dart';

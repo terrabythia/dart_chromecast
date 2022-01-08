@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:dart_chromecast/casting/cast_device.dart';
@@ -13,6 +12,7 @@ import 'package:dart_chromecast/casting/media_channel.dart';
 import 'package:dart_chromecast/casting/receiver_channel.dart';
 import 'package:dart_chromecast/proto/cast_channel.pb.dart';
 import 'package:logging/logging.dart';
+import 'package:universal_io/io.dart';
 
 class CastSender extends Object {
   final Logger log = new Logger('CastSender');
