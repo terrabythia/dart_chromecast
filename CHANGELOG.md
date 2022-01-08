@@ -1,3 +1,6 @@
+## 0.3.2
+* Replace dart:io with universal:io package to support multiple platforms
+
 ## 0.3.1
 * Fixed bug in updating ChromeCast volume
 * Some logging updates
