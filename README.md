@@ -1,5 +1,5 @@
 # dart_chromecast
-Dart package to play videos to a chromecast device
+Dart package to play videos to a chromecast device. Pub.dev package: https://pub.dev/packages/dart_chromecast
 
 **This package is currently under development and the API can change completely at some point. Use at your own risk.**
 
