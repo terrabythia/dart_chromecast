@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
 
-import 'package:http/http.dart' as http;
-import 'package:http/io_client.dart';
 import 'package:logging/logging.dart';
 import 'package:universal_io/io.dart';
 
@@ -75,11 +73,11 @@ class CastDevice {
             ..badCertificateCallback =
                 ((X509Certificate cert, String host, int port) =>
                     trustSelfSigned);
-          IOClient ioClient = new IOClient(httpClient);
           final uri = Uri.parse(
               'https://$host:8443/setup/eureka_info?params=name,device_info');
-          http.Response response = await ioClient.get(uri);
-          Map deviceInfo = jsonDecode(response.body);
+          final request = await httpClient.getUrl(uri);
+          final response = await request.close();
+          Map deviceInfo = jsonDecode(response.toString());
 
           if (deviceInfo['name'] != null && deviceInfo['name'] != 'Unknown') {
             _friendlyName = deviceInfo['name'];
