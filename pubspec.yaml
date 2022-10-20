@@ -12,6 +12,6 @@ dependencies:
   http: ^0.13.5
   cli_util: ^0.3.5
   args: ^2.3.1
-  xml: ">=5.3.1 <7.0.0"
+  xml: ^6.1.0
   logging: ^1.1.0
   multicast_dns: ^0.3.2+2
