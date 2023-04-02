@@ -25,6 +25,16 @@ enum GoogleCastModelType {
 }
 
 class CastDevice {
+  CastDevice({
+    this.name,
+    this.type,
+    this.host,
+    this.port,
+    this.attr,
+  }) {
+    initDeviceInfo();
+  }
+
   final Logger log = Logger('CastDevice');
 
   final String? name;
@@ -49,16 +59,6 @@ class CastDevice {
   String? _friendlyName;
   String? _modelName;
 
-  CastDevice({
-    this.name,
-    this.type,
-    this.host,
-    this.port,
-    this.attr,
-  }) {
-    initDeviceInfo();
-  }
-
   void initDeviceInfo() async {
     if (CastDeviceType.ChromeCast == deviceType) {
       if (null != attr && null != attr!['fn']) {
@@ -73,16 +73,22 @@ class CastDevice {
           bool trustSelfSigned = true;
           HttpClient httpClient = HttpClient()
             ..badCertificateCallback =
-                ((X509Certificate cert, String host, int port) =>
-                    trustSelfSigned);
+                ((X509Certificate cert, String host, int port) => trustSelfSigned);
           IOClient ioClient = new IOClient(httpClient);
           final uri = Uri.parse(
-              'https://$host:8443/setup/eureka_info?params=name,device_info');
+              'https://$host:8443/setup/eureka_info?params=name,device_info,multizone');
           http.Response response = await ioClient.get(uri);
           Map deviceInfo = jsonDecode(response.body);
 
           if (deviceInfo['name'] != null && deviceInfo['name'] != 'Unknown') {
             _friendlyName = deviceInfo['name'];
+            final multiZoneInfo = deviceInfo['multizone'];
+            final groups = multiZoneInfo['groups'] as List<dynamic>;
+            final listing = groups.map((e) {
+              // Here we're grabbing the group name and its port number to use for matching later
+              return MapEntry(e['name'] as String, (e['cast_port']?.toString() ?? 'not supplied'));
+            });
+            castingGroups.addAll(listing);
           } else if (deviceInfo['ssid'] != null) {
             _friendlyName = deviceInfo['ssid'];
           }
@@ -106,8 +112,20 @@ class CastDevice {
     return CastDeviceType.Unknown;
   }
 
+  List<MapEntry<String, String>> castingGroups = [];
+
   String? get friendlyName {
     if (null != _friendlyName) {
+      // We want to look through all the groups this device belongs to and determine if the device is actually the group leader or just a member
+      if (castingGroups.isNotEmpty) {
+        castingGroups.forEach((element) {
+          // If the port number of the device matching that of the group then we know this is the group leader not the individual device
+          if (element.value.contains(port.toString())) {
+            _friendlyName = element.key;
+          }
+        });
+      }
+
       return _friendlyName;
     }
     return name;
@@ -117,19 +135,19 @@ class CastDevice {
 
   GoogleCastModelType get googleModelType {
     switch (modelName) {
-      case "Google Home":
+      case 'Google Home':
         return GoogleCastModelType.GoogleHome;
-      case "Google Home Hub":
+      case 'Google Home Hub':
         return GoogleCastModelType.GoogleHub;
-      case "Google Home Mini":
+      case 'Google Home Mini':
         return GoogleCastModelType.GoogleMini;
-      case "Google Home Max":
+      case 'Google Home Max':
         return GoogleCastModelType.GoogleMax;
-      case "Chromecast":
+      case 'Chromecast':
         return GoogleCastModelType.ChromeCast;
-      case "Chromecast Audio":
+      case 'Chromecast Audio':
         return GoogleCastModelType.ChromeCastAudio;
-      case "Google Cast Group":
+      case 'Google Cast Group':
         return GoogleCastModelType.CastGroup;
       default:
         return GoogleCastModelType.NonGoogle;
