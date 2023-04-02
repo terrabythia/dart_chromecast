@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dart_chromecast/casting/cast_channel.dart';
+import 'package:universal_io/io.dart';
 
 class HeartbeatChannel extends CastChannel {
   HeartbeatChannel.create(Socket? socket,

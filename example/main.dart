@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:args/args.dart';
@@ -7,6 +6,7 @@ import 'package:dart_chromecast/casting/cast.dart';
 import 'package:dart_chromecast/utils/mdns_find_chromecast.dart'
     as find_chromecast;
 import 'package:logging/logging.dart';
+import 'package:universal_io/io.dart';
 
 final Logger log = new Logger('Chromecast CLI');
 
@@ -15,6 +15,9 @@ void main(List<String> arguments) async {
   final parser = new ArgParser()
     ..addOption('host', abbr: 'h', defaultsTo: '')
     ..addOption('port', abbr: 'p', defaultsTo: '8009')
+    ..addOption('title', abbr: 't', defaultsTo: null)
+    ..addOption('subtitle', abbr: 's', defaultsTo: null)
+    ..addOption('image', abbr: 'i', defaultsTo: '')
     ..addFlag('append', abbr: 'a', defaultsTo: false)
     ..addFlag('debug', abbr: 'd', defaultsTo: false);
 
@@ -29,9 +32,17 @@ void main(List<String> arguments) async {
     Logger.root.level = Level.OFF;
   }
 
+  String imageUrl = argResults['image'];
+  final List<String> images = imageUrl != '' ? [imageUrl] : [];
+
   // turn each rest argument string into a CastMedia instance
-  final List<CastMedia> media =
-      argResults.rest.map((String i) => CastMedia(contentId: i)).toList();
+  final List<CastMedia> media = argResults.rest
+      .map((String i) => CastMedia(
+          contentId: i,
+          images: images,
+          title: argResults['title'],
+          subtitle: argResults['subtitle']))
+      .toList();
 
   String host = argResults['host'];
   int? port = int.parse(argResults['port']);
@@ -102,10 +113,6 @@ void startCasting(
     device,
   );
 
-  if (Level.OFF != Logger.root.level) {
-//    castSender.setLogCallback(logCallback);
-  }
-
   // listen for cast session updates and save the state when
   // the device is connected
   castSender.castSessionController.stream
@@ -116,7 +123,7 @@ void startCasting(
         'time': DateTime.now().millisecondsSinceEpoch,
       }..addAll(castSession.toMap());
       await savedStateFile.writeAsString(jsonEncode(map));
-      log.fine('Cast session was saved to saved_cat_state.json.');
+      log.fine('Cast session was saved to saved_cast_state.json.');
     }
   });
 
@@ -125,15 +132,18 @@ void startCasting(
   castSender.castMediaStatusController.stream
       .listen((CastMediaStatus? mediaStatus) {
     // show progress for example
+    if (mediaStatus == null) {
+      return;
+    }
     if (null != prevMediaStatus &&
-        mediaStatus!.volume != prevMediaStatus!.volume) {
+        mediaStatus.volume != prevMediaStatus!.volume) {
       // volume just updated
       log.info('Volume just updated to ${mediaStatus.volume}');
     }
     if (null == prevMediaStatus ||
-        mediaStatus?.position != prevMediaStatus?.position) {
+        mediaStatus.position != prevMediaStatus?.position) {
       // update the current progress
-      log.info('Media Position is ${mediaStatus?.position}');
+      log.info('Media Position is ${mediaStatus.position}');
     }
     prevMediaStatus = mediaStatus;
   });
@@ -153,8 +163,6 @@ void startCasting(
     }
   }
 
-  log.fine('connected? ${connected.toString()}');
-
   // if reconnection failed or we never had a saved state to begin with
   // connect to a fresh session.
   if (!connected) {
@@ -162,9 +170,10 @@ void startCasting(
   }
 
   if (!connected) {
-    log.warning('COUlD NOT CONNECT!');
+    log.warning('COULD NOT CONNECT!');
     return;
   }
+  log.info("Connected with device");
 
   if (!didReconnect) {
     // dont relaunch if we just reconnected, because that would reset the player state
@@ -179,19 +188,22 @@ void startCasting(
   // s = stop playing
   // left arrow = seek current playback - 10s
   // right arrow = seek current playback + 10s
+  // up arrow = volume up 5%
+  // down arrow = volume down 5%
   stdin.echoMode = false;
   stdin.lineMode = false;
 
   stdin.asBroadcastStream().listen((List<int> data) {
     _handleUserInput(castSender, data);
   });
-//  stdin.asBroadcastStream().listen(_handleUserInput);
 }
 
 void _handleUserInput(CastSender castSender, List<int> data) {
   if (data.length == 0) return;
 
   int keyCode = data.last;
+
+  log.info("pressed key with key code: ${keyCode}");
 
   if (32 == keyCode) {
     // space = toggle pause
@@ -202,6 +214,18 @@ void _handleUserInput(CastSender castSender, List<int> data) {
   } else if (27 == keyCode) {
     // escape = disconnect
     castSender.disconnect();
+  } else if (65 == keyCode) {
+    // up
+    double? volume = castSender.castSession?.castMediaStatus?.volume;
+    if (volume != null) {
+      castSender.setVolume(min(1, volume + 0.1));
+    }
+  } else if (66 == keyCode) {
+    // down
+    double? volume = castSender.castSession?.castMediaStatus?.volume;
+    if (volume != null) {
+      castSender.setVolume(max(0, volume - 0.1));
+    }
   } else if (67 == keyCode || 68 == keyCode) {
     // left or right = seek 10s back or forth
     double seekBy = 67 == keyCode ? 10.0 : -10.0;

@@ -1,10 +1,5 @@
-/**
- * TODO:
- * - volume, treble, bass?
- */
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:dart_chromecast/casting/cast_device.dart';
@@ -17,6 +12,7 @@ import 'package:dart_chromecast/casting/media_channel.dart';
 import 'package:dart_chromecast/casting/receiver_channel.dart';
 import 'package:dart_chromecast/proto/cast_channel.pb.dart';
 import 'package:logging/logging.dart';
+import 'package:universal_io/io.dart';
 
 class CastSender extends Object {
   final Logger log = new Logger('CastSender');
@@ -41,7 +37,6 @@ class CastSender extends Object {
   CastMedia? _currentCastMedia;
 
   CastSender(this.device) {
-    // TODO: _airplay._tcp
     _contentQueue = [];
 
     castSessionController = StreamController.broadcast();
@@ -67,10 +62,6 @@ class CastSender extends Object {
 
     // start heartbeat
     _heartbeatTick();
-
-    // start status tick
-    // TODO: only start receiver status tick when there are subscriptions to it
-//    _receiverStatusTick();
 
     return true;
   }
@@ -113,13 +104,10 @@ class CastSender extends Object {
   }
 
   Future<bool> disconnect() async {
-    if (null != _connectionChannel && null != _castSession?.castMediaStatus) {
-      _connectionChannel!.sendMessage({
-        'type': 'CLOSE',
-        'sessionId': _castSession!.castMediaStatus!.sessionId,
-      });
-    }
-
+    log.info("cast_sender.disconnect()");
+    _connectionChannel?.sendMessage({
+      'type': 'CLOSE',
+    });
     _socket?.destroy();
     _dispose();
     connectionDidClose = true;
@@ -148,17 +136,6 @@ class CastSender extends Object {
     }
     if (null != _mediaChannel) {
       _handleContentQueue(forceNext: forceNext || !append);
-    }
-  }
-
-  void _castMediaAction(type, [params]) {
-    if (null == params) params = {};
-    if (null != _mediaChannel && null != _castSession?.castMediaStatus) {
-      _mediaChannel!.sendMessage(params
-        ..addAll({
-          'mediaSessionId': _castSession!.castMediaStatus!.sessionId,
-          'type': type,
-        }));
     }
   }
 
@@ -192,13 +169,34 @@ class CastSender extends Object {
   }
 
   void setVolume(double volume) {
-    Map<String, dynamic> map = {'volume': min(volume, 1)};
-    _castMediaAction('VOLUME', map);
+    Map<String, dynamic> map = {
+      'volume': {'level': volume, 'muted': false}
+    };
+    _castMediaAction('SET_VOLUME', map);
+  }
+
+  void mute() {
+    Map<String, dynamic> map = {
+      'volume': {'muted': true}
+    };
+    _castMediaAction('SET_VOLUME', map);
   }
 
   CastSession? get castSession => _castSession;
 
   // private
+  void _castMediaAction(type, [params]) {
+    if (null == params) params = {};
+    if (null != _mediaChannel && null != _castSession?.castMediaStatus) {
+      dynamic message = params
+        ..addAll({
+          'mediaSessionId': _castSession!.castMediaStatus!.sessionId,
+          'type': type,
+        });
+      log.info("Send message to mediaChannel: " + jsonEncode(message));
+      _mediaChannel!.sendMessage(message);
+    }
+  }
 
   Future<SecureSocket?> _createSocket() async {
     if (null == _socket) {
@@ -232,24 +230,22 @@ class CastSender extends Object {
     List<int> slice = event.getRange(4, event.length).toList();
 
     CastMessage message = CastMessage.fromBuffer(slice);
-    if (null != message) {
-      // handle the message
-      Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
-      log.fine(payloadMap['type']);
-      if ('CLOSE' == payloadMap['type']) {
-        _dispose();
-        connectionDidClose = true;
-      }
-      if ('RECEIVER_STATUS' == payloadMap['type']) {
-        _handleReceiverStatus(payloadMap);
-      } else if ('MEDIA_STATUS' == payloadMap['type']) {
-        _handleMediaStatus(payloadMap);
-      }
+    // handle the message
+    Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
+    log.fine(payloadMap['type']);
+    if ('CLOSE' == payloadMap['type']) {
+      _dispose();
+      connectionDidClose = true;
+    }
+    if ('RECEIVER_STATUS' == payloadMap['type']) {
+      _handleReceiverStatus(payloadMap);
+    } else if ('MEDIA_STATUS' == payloadMap['type']) {
+      _handleMediaStatus(payloadMap);
     }
   }
 
   void _handleReceiverStatus(Map payload) {
-    log.fine(payload.toString());
+    log.info("_handleReceiverStatus()");
     if (null == _mediaChannel &&
         true == payload['status']?.containsKey('applications')) {
       // re-create the channel with the transportId the chromecast just sent us
@@ -286,19 +282,15 @@ class CastSender extends Object {
   }
 
   void _handleMediaStatus(Map payload) {
-    log.fine('Handle media status: ' + payload.toString());
-
     if (null != payload['status']) {
-      if (!_castSession!.isConnected) {
+      if (_castSession != null && !_castSession!.isConnected) {
         _castSession!.isConnected = true;
         _handleContentQueue();
       }
 
-      if (payload['status'].length > 0) {
+      if (_castSession != null && payload['status'].length > 0) {
         _castSession!.castMediaStatus =
             CastMediaStatus.fromChromeCastMediaStatus(payload['status'][0]);
-
-        log.fine('Media status ${_castSession!.castMediaStatus.toString()}');
 
         if (_castSession!.castMediaStatus!.isFinished) {
           _handleContentQueue();
@@ -363,15 +355,12 @@ class CastSender extends Object {
   void _heartbeatTick() {
     if (null != _heartbeatChannel) {
       _heartbeatChannel!.sendMessage({'type': 'PING'});
-
-//      _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
       Timer(Duration(seconds: 5), _heartbeatTick);
     }
   }
 
   void _dispose() {
-    castSessionController.close();
-    castMediaStatusController.close();
+    log.info("cast_sender._dispose()");
     _socket = null;
     _heartbeatChannel = null;
     _connectionChannel = null;
@@ -379,17 +368,5 @@ class CastSender extends Object {
     _mediaChannel = null;
     _castSession = null;
     _contentQueue = [];
-  }
-
-  @override
-  logError(String message, [Error? error]) {
-    // TODO: implement logError
-    return null;
-  }
-
-  @override
-  logInfo(String message) {
-    // TODO: implement logInfo
-    return null;
   }
 }

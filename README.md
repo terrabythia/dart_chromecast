@@ -1,5 +1,5 @@
 # dart_chromecast
-Dart package to play videos to a chromecast device
+Dart package to play videos to a chromecast device. Pub.dev package: https://pub.dev/packages/dart_chromecast
 
 **This package is currently under development and the API can change completely at some point. Use at your own risk.**
 
@@ -44,7 +44,7 @@ See https://github.com/terrabythia/flutter_chromecast_example for an example imp
 **--debug** (-d) whether to show all info logs, defaults to `false`.
 
 ### usage
-`dart example/index.dart <media> [--host <host> [--port <port> [--append [ --debug]]]]` 
+`dart example/main.dart <media> [--host <host> [--port <port> [--append [ --debug]]]]` 
 
 ### playback control
 In this demo the following keys can be used to control the playback of the video:
@@ -56,10 +56,10 @@ In this demo the following keys can be used to control the playback of the video
 `right arrow key` seek +10 seconds
 
 ### example
-`dart example/index.dart http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4`
+`dart example/main.dart http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4`
 
 ### reconnecting to active session
 When you exit the command line without disconnecting the device, the video will keep playing. 
 To reconnect without messing with the current playlist, just run the command without any media urls. Eg:
 
-`dart index.dart --host=192.168.1.1`
+`dart example/main.dart --host=192.168.1.1`

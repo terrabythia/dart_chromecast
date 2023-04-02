@@ -1,11 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
+
+import 'package:logging/logging.dart';
+import 'package:universal_io/io.dart';
 
 import './../writer.dart';
 import '../proto/cast_channel.pb.dart';
 
 abstract class CastChannel {
+  final Logger log = new Logger('CastSender');
   static int _requestId = 1;
 
   final Socket? _socket;
@@ -40,13 +43,7 @@ abstract class CastChannel {
     Uint32List fullData =
         Uint32List.fromList(headers.toList()..addAll(bytes.toList()));
 
-    if ('PING' != payload['type']) {
-      // print('Send: ${castMessage.toDebugString()}');
-      // print('List: ${fullData.toList().toString()}');
-
-    } else {
-      print('PING');
-    }
+    log.fine(payload['type']);
 
     _socket!.add(fullData);
 
